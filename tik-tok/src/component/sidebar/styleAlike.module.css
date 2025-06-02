@@ -1,0 +1,14 @@
+.alike {
+  all: unset;
+  color: inherit;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+}
+.changeTop{
+    margin-top: -20px;
+}
