@@ -1,12 +1,22 @@
-import logo from './logo.svg';
 import './App.css';
 import Sidebar from './component/sidebar/menuSiderbar';
+import Discover from './component/sidebar/discover';
 import Video from './component/handleVideo/video';
+import { Routes, Route } from 'react-router-dom';
+
 function App() {
   return (
-    <div className="App">
+    <div className="App" >
       <Sidebar />
-     <Video />
+
+      {/* phần bên phải thay đổi theo route */}
+      <div >
+        <Routes>
+          <Route path="/" element={<Video />} />
+          <Route path="/discover" element={<Discover/>} />
+          {/* có thể thêm các route khác tại đây */}
+        </Routes>
+      </div>
     </div>
   );
 }

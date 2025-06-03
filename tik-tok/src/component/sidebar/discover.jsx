@@ -5,7 +5,7 @@ import Home from "./home";
 function Discover() {
   return (
     <div>
-      
+     <h1>hi</h1>
     </div>
   );
 }

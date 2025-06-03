@@ -2,19 +2,15 @@ import React from "react";
 
 import { useRef, useState } from "react";
 import styles from "./styleAlike.module.css";
-function Home({ icon, title,className,handleClick ,color}) {
+function Home({ icon, title,className,handleClick ,isActive }) {
  
 
   return (
-    <div style={color}>
+    <div className={`${styles.wrapper} ${isActive ? styles.active : ""}`}>
       <button
-        className={`${styles.alike} ${className}`} // style căn chỉnh các menu sidebar sang trái
-        // onClick={() => {
-        //   setRed("red");
-         
-        //   // alert("Chức năng này đang được phát triển");
-        // }}
+       className={`${styles.alike} `}
         onClick={handleClick}
+        
       >
         
         {icon} 

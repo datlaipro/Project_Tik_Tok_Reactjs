@@ -1,14 +1,30 @@
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 10px 0;
+}
+
+.wrapper {
+  width: 100%;
+  border-radius: 8px;
+  padding: 8px 16px;
+  margin: 4px 0;
+  width: max-content;
+}
+
 .alike {
   all: unset;
-  color: inherit;
-  background-color: transparent;
-  border: none;
-  cursor: pointer;
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 10px;
+  cursor: pointer;
+  color: black;
 }
-.changeTop{
-    margin-top: -20px;
+
+.active {
+  background-color: #f8f8f8;
+}
+
+.active .alike {
+  color: #fe2c55;
 }
