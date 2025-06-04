@@ -1,6 +1,6 @@
 import React from "react";
 
-function Video() {
+function Video(children) {
   return (
     <div
       style={{
@@ -29,6 +29,7 @@ function Video() {
         />
         Trình duyệt của bạn không hỗ trợ video.
       </video>
+    {/* {children} */}
     </div>
   );
 }

@@ -9,6 +9,7 @@ import EmailIcon from "@mui/icons-material/Email";
 import TelegramIcon from "@mui/icons-material/Telegram";
 import LiveTvIcon from "@mui/icons-material/LiveTv";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+
 import Video from "../handleVideo/video";
 import Discover from "./discover";
 import Friend from "./friend";
@@ -50,16 +51,17 @@ function Sidebar() {
   // const [red, setRed] = useState("none"); // sử lí màu sắc của nút đề xuất
   const navigate = useNavigate(); // khởi tạo hook điều hướng
   const [state, dispatch] = useReducer(reducer, stateColor); // sử lí màu sắc của các nút sidebar
- 
+
   return (
     <div>
       <Search />
       <Home
         icon={<HomeIcon sx={{ fontSize: 30 }} />}
         title="Đề Xuất"
-        handleClick={() =>{dispatch({ type: setActive, index: 0 })
-      navigate("/video");
-      } }
+        handleClick={() => {
+          dispatch({ type: setActive, index: 0 });
+          navigate("/video");
+        }}
         isActive={state[0] === "red"}
       />
       <Home

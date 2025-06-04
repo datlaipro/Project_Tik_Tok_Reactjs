@@ -3,17 +3,17 @@ import Sidebar from './component/sidebar/menuSiderbar';
 import Discover from './component/sidebar/discover';
 import Video from './component/handleVideo/video';
 import { Routes, Route } from 'react-router-dom';
-
+import SidebarAction from './component/home/sidebarAction';
 function App() {
   return (
     <div className="App" >
       <Sidebar />
-
+      <SidebarAction />
       {/* phần bên phải thay đổi theo route */}
       <div >
         <Routes>
-          <Route path="/" element={<Video />} />
-          <Route path="/discover" element={<Discover/>} />
+          <Route path="/video" element={<Video />} />
+          <Route path="/discover" element={<Discover />} />
           {/* có thể thêm các route khác tại đây */}
         </Routes>
       </div>
