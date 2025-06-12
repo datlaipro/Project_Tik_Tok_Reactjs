@@ -7,6 +7,13 @@ function Like() {
     <div>
       <ActionPattern parent={()=>{
         setColor(color === "none" ? "red" : "none");
+        // if
+        //     (color === "none") {
+        //   alert("You liked this video");
+
+        // }else{
+        //   alert("You unliked this video");
+        // }
       }}
       data={0}>
         <FavoriteIcon sx={{ fontSize: 30,color: color }} />

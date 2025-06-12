@@ -7,25 +7,29 @@ import Video from "../handleVideo/video";
 import BackgroundMusic from "../handleVideo/backgroundMusic";
 function SidebarAction() {
   return (
-    <section
-      style={{
-        position: "absolute",
-        bottom: "20px",
-        right: "420px",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: "15px",
-      }}
-    >
-      <AccountUser />
-      <Like />
-      <Comment />
-      <Share />
-      <Bookmark />
-      <BackgroundMusic />
+    <div>
+      <section
+        style={{
+          position: "absolute",
+          bottom: "20px",
+          right: "420px",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: "15px",
+          zIndex: 9999, // ✅ rất cao để nằm trên video
+          pointerEvents: "auto", // ✅ đảm bảo có thể click
+        }}
+      >
+        <AccountUser />
+        <Like />
+        <Comment />
+        <Share />
+        <Bookmark />
+        <BackgroundMusic />
+      </section>
       
-    </section>
+    </div>
   );
 }
 export default SidebarAction;

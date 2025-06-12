@@ -82,7 +82,10 @@ function Sidebar() {
       <Home
         icon={<UploadIcon sx={{ fontSize: 30 }} />}
         title="Up Load Video"
-        handleClick={() => dispatch({ type: setActive, index: 3 })}
+        handleClick={() => {
+          dispatch({ type: setActive, index: 3 });
+          navigate("/upload");
+        }}
         isActive={state[3] === "red"}
       />
       <Home

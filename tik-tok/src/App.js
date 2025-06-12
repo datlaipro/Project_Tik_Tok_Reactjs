@@ -2,20 +2,27 @@ import './App.css';
 import Sidebar from './component/sidebar/menuSiderbar';
 import Discover from './component/sidebar/discover';
 import Video from './component/handleVideo/video';
+import UpLoadVideo from './component/sidebar/uploadVideo';
 import { Routes, Route } from 'react-router-dom';
 import SidebarAction from './component/home/sidebarAction';
 function App() {
   return (
-    <div className="App" >
-      <Sidebar />
-      <SidebarAction />
-      {/* phần bên phải thay đổi theo route */}
-      <div >
-        <Routes>
-          <Route path="/video" element={<Video />} />
-          <Route path="/discover" element={<Discover />} />
-          {/* có thể thêm các route khác tại đây */}
-        </Routes>
+    <div className="App">
+      <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
+        {/* Sidebar trái */}
+        <div style={{ width: "80px", flexShrink: 0 ,zIndex: 2}}>
+          <Sidebar />
+        </div>
+
+        {/* Phần giữa: hiển thị nội dung route */}
+        <div style={{ flex: 1, overflowY: "scroll", position: "relative" }}>
+          <Routes>
+            <Route path="/upload" element={<UpLoadVideo />} />
+            <Route path="/" element={<Video />} />
+            <Route path="/video" element={<Video />} />
+            <Route path="/discover" element={<Discover />} />
+          </Routes>
+        </div>
       </div>
     </div>
   );
