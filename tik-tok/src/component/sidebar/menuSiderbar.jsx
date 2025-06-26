@@ -18,7 +18,9 @@ import Action from "./action";
 import Messenger from "./messenger";
 import LiveStream from "./liveStream";
 import Profile from "./profile";
+import AuthForm from "./loginAndRegister";
 import { useState, useReducer, useEffect } from "react";
+import { Modal, Box } from "@mui/material"; // ✅ Modal & Box từ MUI
 import {
   BrowserRouter as Router,
   Routes,
@@ -26,6 +28,7 @@ import {
   Link,
   useNavigate,
 } from "react-router-dom";
+
 const stateColor = [
   "none",
   "none",
@@ -51,7 +54,10 @@ function Sidebar() {
   // const [red, setRed] = useState("none"); // sử lí màu sắc của nút đề xuất
   const navigate = useNavigate(); // khởi tạo hook điều hướng
   const [state, dispatch] = useReducer(reducer, stateColor); // sử lí màu sắc của các nút sidebar
-
+  const [login, setLogin] = useState(false); // sử lí trạng thái đăng nhập`]
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
   return (
     <div>
       <Search />
@@ -106,12 +112,49 @@ function Sidebar() {
         handleClick={() => dispatch({ type: setActive, index: 6 })}
         isActive={state[6] === "red"}
       />
-      <Home
-        icon={<AccountCircleIcon sx={{ fontSize: 30 }} />}
-        title="Hồ Sơ"
-        handleClick={() => dispatch({ type: setActive, index: 7 })}
-        isActive={state[7] === "red"}
-      />
+
+      {login === false ? (
+        <Home
+          icon={<AccountCircleIcon sx={{ fontSize: 30 }} />}
+          title="đăng nhập"
+          handleClick={() => {
+            dispatch({ type: setActive, index: 7 });
+            handleOpen(); // Kích hoạt hiển thị form}
+          }}
+          isActive={state[7] === "red"}
+        />
+      ) : (
+        <Home
+          icon={<AccountCircleIcon sx={{ fontSize: 30 }} />}
+          title="Hồ Sơ"
+          handleClick={() => dispatch({ type: setActive, index: 7 })}
+          isActive={state[7] === "red"}
+        />
+      )}
+      <Modal
+        open={open}
+        onClose={(event, reason) => {
+          if (reason !== "backdropClick") {
+            handleClose(); // chỉ đóng nếu không phải do click ra ngoài
+          }
+        }}
+      >
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            bgcolor: "background.paper",
+            boxShadow: 24,
+            borderRadius: 2,
+            p: 4,
+            width: 350,
+          }}
+        >
+          <AuthForm onClose={handleClose} />
+        </Box>
+      </Modal>
     </div>
   );
 }

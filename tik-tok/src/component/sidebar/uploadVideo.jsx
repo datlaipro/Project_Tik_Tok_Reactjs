@@ -24,7 +24,7 @@ function UpLoadVideo() {
 
       <input
         type="file"
-        accept="image/*,video/*"
+        accept="video/*"
         ref={inputRef}
         onChange={handleChange}
         style={{ display: "none" }}
