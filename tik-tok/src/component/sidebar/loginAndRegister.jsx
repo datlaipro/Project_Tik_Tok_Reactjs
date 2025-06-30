@@ -1,4 +1,5 @@
 import { useState } from "react";
+
 import {
   Box,
   Button,
@@ -10,12 +11,13 @@ import {
   IconButton,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import axios from "axios";
 
 export default function AuthForm({ onClose }) {
   const [mode, setMode] = useState("login"); // "login" | "register"
   const [formData, setFormData] = useState({
     username: "",
-    email: "",
+    // email: "",
     password: "",
   });
 
@@ -30,12 +32,30 @@ export default function AuthForm({ onClose }) {
     e.preventDefault();
     if (mode === "login") {
       console.log("Đăng nhập với:", {
-        email: formData.email,
         password: formData.password,
       });
       onClose();
     } else {
       console.log("Đăng ký với:", formData);
+      // Gọi API đăng ký ở đây
+      const register = async () => {
+        try {
+          const response = await axios.post(
+            "http://localhost:4000/api/createUser",
+            {
+              account: formData.username,
+              password: formData.password,
+            }
+          );
+
+          console.log("Phản hồi từ server:", response.data);
+        } catch (error) {
+          console.error("Lỗi đăng ký:", error.response?.data || error.message);
+        }
+      };
+      register();
+      // Sau khi đăng ký thành công, có thể reset form hoặc đóng modal
+
       onClose();
     }
   };
@@ -71,19 +91,17 @@ export default function AuthForm({ onClose }) {
         </Tabs>
 
         <Box component="form" mt={2} onSubmit={handleSubmit}>
-          {mode === "register" && (
-            <TextField
-              fullWidth
-              margin="normal"
-              label="Tên người dùng"
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-              required
-            />
-          )}
-
           <TextField
+            fullWidth
+            margin="normal"
+            label="Tên người dùng"
+            name="username"
+            value={formData.username}
+            onChange={handleChange}
+            required
+          />
+
+          {/* <TextField
             fullWidth
             margin="normal"
             label="Email"
@@ -92,7 +110,7 @@ export default function AuthForm({ onClose }) {
             value={formData.email}
             onChange={handleChange}
             required
-          />
+          /> */}
 
           <TextField
             fullWidth
