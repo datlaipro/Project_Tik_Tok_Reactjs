@@ -1,5 +1,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import SidebarAction from "../home/sidebarAction";
+import SuccessRegister from "../Notification/loginSuccess"; // Import thông báo đăng ký thành công
+import AuthForm from "../sidebar/loginAndRegister"; // Import form đăng nhập/đăng ký
 
 const videos = [
   "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
@@ -11,7 +13,8 @@ function Video() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const videoRefs = useRef([]); // danh sách ref của từng video block
 
-  const scrollToIndex = (index) => {// xử lý cuộn đến video theo index
+  const scrollToIndex = (index) => {
+    // xử lý cuộn đến video theo index
     const videoEl = videoRefs.current[index];
     if (videoEl) {
       videoEl.scrollIntoView({ behavior: "smooth" });
@@ -27,15 +30,17 @@ function Video() {
     scrollToIndex(currentIndex + 1);
   };
 
-  useEffect(() => {// xử lý Intersection Observer để tự động play/pause video khi cuộn
+  useEffect(() => {
+    // xử lý Intersection Observer để tự động play/pause video khi cuộn
     const observer = new IntersectionObserver(
       (entries) => {
         const visible = entries
-          .filter((entry) => entry.isIntersecting)// kiểm tra video có đang hiển thị hay không
+          .filter((entry) => entry.isIntersecting) // kiểm tra video có đang hiển thị hay không
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
 
         // Tự động play/pause
-        videoRefs.current.forEach((el, idx) => {// duyệt qua từng thẻ video
+        videoRefs.current.forEach((el, idx) => {
+          // duyệt qua từng thẻ video
           if (!el) return;
           const videoTag = el.querySelector("video");
           if (!videoTag) return;
@@ -68,7 +73,7 @@ function Video() {
 
     return () => observer.disconnect();
   }, []);
-
+ 
   return (
     <div
       ref={containerRef}
@@ -79,6 +84,8 @@ function Video() {
         scrollSnapType: "y mandatory",
       }}
     >
+      
+
       {videos.map((src, index) => (
         <div
           key={index}

@@ -1,5 +1,5 @@
 import { useState } from "react";
-
+import SuccessRegister from "../Notification/loginSuccess"; // Import thông báo đăng ký thành công
 import {
   Box,
   Button,
@@ -13,8 +13,9 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import axios from "axios";
 
-export default function AuthForm({ onClose }) {
+export default function AuthForm({ onClose,onLoginSuccess  }) {
   const [mode, setMode] = useState("login"); // "login" | "register"
+  const [showSuccess, setShowSuccess] = useState(false); // 👈 Thêm state để hiển thị thông báo
   const [formData, setFormData] = useState({
     username: "",
     // email: "",
@@ -36,8 +37,8 @@ export default function AuthForm({ onClose }) {
       });
       onClose();
     } else {
-      console.log("Đăng ký với:", formData);
-      // Gọi API đăng ký ở đây
+      // console.log("Đăng ký với:", formData);
+      // Gọi API đăng ký account user ở đây
       const register = async () => {
         try {
           const response = await axios.post(
@@ -48,16 +49,22 @@ export default function AuthForm({ onClose }) {
             }
           );
 
-          console.log("Phản hồi từ server:", response.data);
+          console.log("Phản hồi từ server:", response.data.name);// lấy ra tên tài khoản đã đăng ký
+          setShowSuccess(true);; // 👈 Hiển thị thông báo sau khi đăng ký thành công
+          // ❗ Đóng modal sau 2.5 giây để có thời gian hiển thị Snackbar
+          setTimeout(() => {
+            setShowSuccess(false);
+            onClose();
+          }, 2000);
         } catch (error) {
           console.error("Lỗi đăng ký:", error.response?.data || error.message);
         }
       };
       register();
       // Sau khi đăng ký thành công, có thể reset form hoặc đóng modal
-
-      onClose();
     }
+    // {showSuccess && <SuccessRegister />}
+    // onClose(); // Đóng modal sau khi đăng ký
   };
 
   return (
@@ -100,7 +107,6 @@ export default function AuthForm({ onClose }) {
             onChange={handleChange}
             required
           />
-
           {/* <TextField
             fullWidth
             margin="normal"
@@ -111,7 +117,6 @@ export default function AuthForm({ onClose }) {
             onChange={handleChange}
             required
           /> */}
-
           <TextField
             fullWidth
             margin="normal"
@@ -122,7 +127,6 @@ export default function AuthForm({ onClose }) {
             onChange={handleChange}
             required
           />
-
           <Button
             fullWidth
             type="submit"
@@ -132,12 +136,13 @@ export default function AuthForm({ onClose }) {
           >
             {mode === "login" ? "Đăng nhập" : "Đăng ký"}
           </Button>
-
           <Typography variant="body2" align="center" mt={2}>
             {mode === "login"
               ? "Chưa có tài khoản? Chọn tab Đăng ký bên trên."
               : "Đã có tài khoản? Chọn tab Đăng nhập bên trên."}
           </Typography>
+          {showSuccess && <SuccessRegister />}
+          {/* 👈 Render nếu state là true */}
         </Box>
       </Paper>
     </Box>

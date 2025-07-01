@@ -1,17 +1,23 @@
-const creatUserDB = require('../models/creatUserDB'); // Chỉnh đúng đường dẫn đến file creatUserDB.js
+const creatUserDB = require('../models/creatUserDB');
 
 async function creatAccountController(req, res) {
   const { account, password } = req.body;
 
   try {
-    // Gọi hàm từ model để thêm user vào DB
     const result = await creatUserDB.creatUserDB(account, password);
 
-    // Trả phản hồi về client
+    if (!result.success) {
+      return res.status(409).json({ // HTTP 409 Conflict
+        success: false,
+        message: result.message
+      });
+    }
+
     res.status(201).json({
       success: true,
       message: 'Tạo tài khoản thành công',
-      userId: result.insertId
+      userId: result.userId,
+      name: account // Trả về tên tài khoản đã tạo
     });
   } catch (err) {
     console.error('Lỗi tạo tài khoản:', err);
@@ -20,7 +26,6 @@ async function creatAccountController(req, res) {
       message: 'Tạo tài khoản thất bại'
     });
   }
-
 }
 
 module.exports = { creatAccountController };
