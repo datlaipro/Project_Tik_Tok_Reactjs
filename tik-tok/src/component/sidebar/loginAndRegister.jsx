@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import SuccessRegister from "../Notification/loginSuccess"; // Import thông báo đăng ký thành công
 import {
   Box,
@@ -13,9 +13,12 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import axios from "axios";
 
-export default function AuthForm({ onClose,onLoginSuccess  }) {
+export default function AuthForm({ onClose }) {
+  const [errorMessage, setErrorMessage] = useState(""); // Thêm state để lưu thông báo lỗi hoặc thành công
+  const [colors, setColors] = useState("success"); // Thêm state để quản lý màu sắc của Alert
+  const [openSnackbar, setOpenSnackbar] = useState(false); // Thêm state để quản lý việc hiển thị Snackbar
+
   const [mode, setMode] = useState("login"); // "login" | "register"
-  const [showSuccess, setShowSuccess] = useState(false); // 👈 Thêm state để hiển thị thông báo
   const [formData, setFormData] = useState({
     username: "",
     // email: "",
@@ -32,39 +35,63 @@ export default function AuthForm({ onClose,onLoginSuccess  }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (mode === "login") {
-      console.log("Đăng nhập với:", {
-        password: formData.password,
-      });
-      onClose();
-    } else {
-      // console.log("Đăng ký với:", formData);
-      // Gọi API đăng ký account user ở đây
-      const register = async () => {
+      // Gọi API đăng nhập user ở đây
+      const login = async () => {
         try {
-          const response = await axios.post(
-            "http://localhost:4000/api/createUser",
-            {
-              account: formData.username,
-              password: formData.password,
-            }
-          );
+          await axios.post("http://localhost:4000/api/login", {
+            account: formData.username,
+            password: formData.password,
+          });
+          setColors("success"); // Đặt màu sắc cho Alert
+          setOpenSnackbar(true); // 👈 Hiển thị thông báo sau khi đăng nhập thành công
+          setErrorMessage("Đăng nhập tài khoản thành công! "); // hiển thị thông báo đăng nhập thành công
 
-          console.log("Phản hồi từ server:", response.data.name);// lấy ra tên tài khoản đã đăng ký
-          setShowSuccess(true);; // 👈 Hiển thị thông báo sau khi đăng ký thành công
           // ❗ Đóng modal sau 2.5 giây để có thời gian hiển thị Snackbar
           setTimeout(() => {
-            setShowSuccess(false);
+            setOpenSnackbar(false); // Đóng Snackbar
             onClose();
           }, 2000);
         } catch (error) {
-          console.error("Lỗi đăng ký:", error.response?.data || error.message);
+          // console.error(
+          //   "Lỗi đăng nhập:",
+          //   error.response?.data || error.message
+          // );
+          setErrorMessage(error.response.data.message); // hiển thị thông báo lỗi đăng nhập
+          setColors("warning"); // Đặt màu sắc cho Alert
+          setOpenSnackbar(true);
+        }
+      };
+      login();
+      // onClose();
+    } else {
+      // Gọi API đăng ký account user ở đây
+      const register = async () => {
+        try {
+          await axios.post("http://localhost:4000/api/createUser", {
+            account: formData.username,
+            password: formData.password,
+          });
+
+          setColors("success"); // Đặt màu sắc cho Alert
+          setOpenSnackbar(true); // 👈 Hiển thị thông báo sau khi đăng ký thành công
+          // console.log("Phản hồi từ server:", response.data.name); // lấy ra tên tài khoản đã đăng ký
+          setErrorMessage("Đăng ký tài khoản thành công! "); // Lưu tên tài khoản vào messageErr
+          // ❗ Đóng modal sau 2.5 giây để có thời gian hiển thị Snackbar
+          setTimeout(() => {
+            setOpenSnackbar(false); // Đóng Snackbar
+            onClose();
+          }, 2000);
+        } catch (error) {
+          // console.error("Lỗi đăng ký:", error.response?.data || error.message);
+          setErrorMessage(error.response.data.message); // Lưu tên tài khoản vào messageErr
+          setColors("warning"); // Đặt màu sắc cho Alert
+          setOpenSnackbar(true);
         }
       };
       register();
+
       // Sau khi đăng ký thành công, có thể reset form hoặc đóng modal
     }
-    // {showSuccess && <SuccessRegister />}
-    // onClose(); // Đóng modal sau khi đăng ký
   };
 
   return (
@@ -107,16 +134,7 @@ export default function AuthForm({ onClose,onLoginSuccess  }) {
             onChange={handleChange}
             required
           />
-          {/* <TextField
-            fullWidth
-            margin="normal"
-            label="Email"
-            name="email"
-            type="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          /> */}
+
           <TextField
             fullWidth
             margin="normal"
@@ -141,7 +159,16 @@ export default function AuthForm({ onClose,onLoginSuccess  }) {
               ? "Chưa có tài khoản? Chọn tab Đăng ký bên trên."
               : "Đã có tài khoản? Chọn tab Đăng nhập bên trên."}
           </Typography>
-          {showSuccess && <SuccessRegister />}
+
+          {
+            <SuccessRegister
+              messenger={errorMessage}
+              colors={colors}
+              open={openSnackbar}
+              onClose={() => setOpenSnackbar(false)}
+            />
+          }
+
           {/* 👈 Render nếu state là true */}
         </Box>
       </Paper>

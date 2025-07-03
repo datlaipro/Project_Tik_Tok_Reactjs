@@ -1,9 +1,14 @@
 const configDB = require('../config/database'); // chỉnh đúng đường dẫn đến file database.js
+const bcrypt = require('bcrypt');
+
 async function creatUserDB(account, password) {
 
     const connection = await configDB();
 
     try {
+
+        // Mã hóa mật khẩu trước khi lưu vào cơ sở dữ liệu
+        password = await bcrypt.hash(password, 10);
         const [result] = await connection.query(
             'INSERT INTO users (account, password) VALUES (?, ?)',
             [account, password]
@@ -14,7 +19,10 @@ async function creatUserDB(account, password) {
             return { success: false, message: 'Tài khoản đã tồn tại' };
         }
         throw err; // lỗi khác thì ném ra để debug
+    } finally {
+        await connection.end();
     }
+
 }
 
 module.exports = { creatUserDB };
