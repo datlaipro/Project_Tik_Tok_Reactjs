@@ -4,13 +4,21 @@ async function loginUserController(req, res) {
 
     try {
         const result = await loginUserDB.loginUserDB(account, password);
-        if (result.success=== true) {
+        if (result.success === true) {
+
+            res.cookie("token", result.token, {
+                httpOnly: true,
+                secure: false,       // Bật true khi dùng HTTPS
+                sameSite: "lax",
+                maxAge: 60 * 60 * 1000,
+            });
+
             return res.status(200).json({
                 success: true,
                 message: 'Đăng nhập thành công',
-                userId: result.userId,
+                // userId: result.userId,
                 name: account, // Trả về tên tài khoản đã đăng nhập
-                // Có thể thêm các thông tin khác nếu cần
+                // token: result.token, // Trả về token JWT
             });
         }
         else {

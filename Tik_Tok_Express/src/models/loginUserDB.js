@@ -1,6 +1,7 @@
 const configDB = require('../config/database');
 const bcrypt = require('bcrypt');
-
+const jwt = require('jsonwebtoken');
+const SECRET_KEY = process.env.JWT_SECRET;
 async function loginUserDB(username, password) {// Hàm đăng nhập người dùng
     const connection = await configDB();
 
@@ -18,14 +19,20 @@ async function loginUserDB(username, password) {// Hàm đăng nhập người d
 
         // So sánh mật khẩu nhập vào với mật khẩu đã mã hoá trong DB
         const isMatch = await bcrypt.compare(password, user.password);
-       
+
 
         if (!isMatch) {
             return { success: false, message: 'Mật khẩu không đúng' };
+        } else {
+            // Tạo token JWT nếu mật khẩu đúng
+            const token = jwt.sign(
+                { id: user.userId, account: user.account }, SECRET_KEY, { expiresIn: '1h' })
+
+
+            // Nếu đúng, trả về thông tin người dùng
+            return { success: true, userId: user.id, account: user.account, token: token };
         }
 
-        // Nếu đúng, trả về thông tin người dùng
-        return { success: true, userId: user.id, account: user.account };
 
     } catch (err) {
         console.error("Lỗi truy vấn:", err);

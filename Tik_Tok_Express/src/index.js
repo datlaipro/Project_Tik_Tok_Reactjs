@@ -1,25 +1,38 @@
+
 const express = require('express')
+require('dotenv').config()// thư viện dotenv để đọc biến môi trường từ file .env và phải được gọi trước khi sử dụng bất kỳ biến môi trường nào
+
+const app = express()
+const cookieParser = require("cookie-parser");// thư viện cookie-parser để xử lý cookie từ phía client
+
 const path = require('path') // thư viện path để xử lý đường dẫn
 const morgan = require('morgan')//thư viện morgan để log request http từ phía client
 const handlebar = require('express-handlebars')//thư viện express-handlebars để render html view về frontend
-const app = express()
+
 const cors = require('cors'); // 👈 import thư viện
-app.use(cors()); // 👈 cho phép tất cả frontend truy cập (mặc định)
-app.use(express.json()); // 👈 đọc JSON từ body
-const apiCreateAccount = require('./routes/Account/loginAndResigt'); // chỉnh đúng đường dẫn đến file creatAccount.js
-const apiLoginAccount = require('./routes/Account/loginAndResigt'); // chỉnh đúng đường dẫn đến file loginAccount.js
+app.use(
+  cors({
+    origin: "http://localhost:3000", // hoặc nơi bạn chạy React
+    credentials: true,               // ❗ CHO PHÉP gửi cookie
+  })
+);app.use(express.json()); // 👈 đọc JSON từ body
+const apiCreateAccount = require('./routes/AccountApi/API'); // chỉnh đúng đường dẫn đến file creatAccount.js
+const apiLoginAccount = require('./routes/AccountApi/API'); // chỉnh đúng đường dẫn đến file loginAccount.js
+const apiProfileUser = require('./routes/AccountApi/API') // chỉnh đúng đường dẫn đến file profileController.js
 // const configDB = require('./config/database'); // chỉnh đúng đường dẫn đến file database.js
 const port = process.env.PORT
+app.use(cookieParser());
+
 require('dotenv').config()// thư viện dotenv để đọc biến môi trường từ file .env
 // const router = require('./routes/Account/creatAccount'); // chỉnh đúng đường dẫn đến file creatAccount.js
 app.use(morgan('combined')) // sử dụng morgan với định dạng 'dev' để log request
 
 app.use('/api', apiCreateAccount); // sử dụng router cho các API liên quan đến đăng kí  tài khoản
 app.use('/api', apiLoginAccount)// sử dụng router cho các API liên quan đến đăng nhập tài khoản
-
-app.set('views', path.join(__dirname, 'resources\\views')) // thiết lập thư mục chứa view
-app.engine('handlebars', handlebar.engine()); // đăng ký engine handlebars
-app.set('view engine', 'handlebars'); // thiết lập view engine là handlebars
+app.use('/api', apiProfileUser)// sử dụng router cho các API liên quan đến lấy thông tin người dùng đã đăng nhập
+// app.set('views', path.join(__dirname, 'resources\\views')) // thiết lập thư mục chứa view
+// app.engine('handlebars', handlebar.engine()); // đăng ký engine handlebars
+// app.set('view engine', 'handlebars'); // thiết lập view engine là handlebars
 
 // app.use("/create-account",router ); // sử dụng middleware để phục vụ tệp tĩnh từ thư mục create-account
 app.listen(port, () => {

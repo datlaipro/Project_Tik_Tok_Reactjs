@@ -19,6 +19,7 @@ import Messenger from "./messenger";
 import LiveStream from "./liveStream";
 import Profile from "./profile";
 import AuthForm from "./loginAndRegister";
+
 import { useState, useReducer, useEffect } from "react";
 import { Modal, Box } from "@mui/material"; // ✅ Modal & Box từ MUI
 import {
@@ -28,7 +29,7 @@ import {
   Link,
   useNavigate,
 } from "react-router-dom";
-
+import axios from "axios"; // Thư viện axios để gửi request HTTP
 const stateColor = [
   "none",
   "none",
@@ -58,6 +59,27 @@ function Sidebar() {
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+  const [loading, setLoading] = useState(true); // 👈 thêm state loading để tránh lỗi hiển thị trạng thái đăng nhập
+
+  // Khi app khởi động, kiểm tra trạng thái đăng nhập
+  useEffect(() => {
+    axios
+      .get("http://localhost:4000/api/profile", { withCredentials: true })
+      .then((res) => {
+        console.log("✅ Đã đăng nhập, user:", res.data.user);
+        setLogin(true);
+        setLoading(false); // ✅ dừng loading sau khi có phản hồi
+      })
+      .catch((err) => {
+        console.log(
+          "❌ Chưa đăng nhập hoặc token lỗi:",
+          err.response?.data || err.message
+        );
+        setLogin(false); // vẫn cần đặt lại login false
+        setLoading(false); // ✅ dừng loading
+      });
+  }, []);
+
   return (
     <div>
       <Search />
@@ -113,48 +135,56 @@ function Sidebar() {
         isActive={state[6] === "red"}
       />
 
-      {login === false ? (
-        <Home
-          icon={<AccountCircleIcon sx={{ fontSize: 30 }} />}
-          title="đăng nhập"
-          handleClick={() => {
-            dispatch({ type: setActive, index: 7 });
-            handleOpen(); // Kích hoạt hiển thị form}
-          }}
-          isActive={state[7] === "red"}
-        />
+      {loading ? null : login === false ? (// khi load trang xong mới render 
+        <>
+          <Home
+            icon={<AccountCircleIcon sx={{ fontSize: 30 }} />}
+            title="đăng nhập"
+            handleClick={() => {
+              dispatch({ type: setActive, index: 7 });
+              handleOpen(); // Kích hoạt hiển thị form Đăng nhập hoăc Đăng ký
+            }}
+            isActive={state[7] === "red"}
+          />
+          <Modal // component Modal đăng nhập/ đăng kí từ MUI
+            open={open}
+            onClose={(event, reason) => {
+              if (reason !== "backdropClick") {
+                handleClose(); // chỉ đóng nếu không phải do click ra ngoài
+              }
+            }}
+          >
+            <Box
+              sx={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                bgcolor: "background.paper",
+                boxShadow: 24,
+                borderRadius: 2,
+                p: 4,
+                width: 350,
+              }}
+            >
+              <AuthForm
+                onClose={handleClose}
+                onLoginSuccess={() => setLogin(true)}
+              />
+            </Box>
+          </Modal>
+        </>
       ) : (
         <Home
           icon={<AccountCircleIcon sx={{ fontSize: 30 }} />}
           title="Hồ Sơ"
-          handleClick={() => dispatch({ type: setActive, index: 7 })}
+          handleClick={() => {
+            dispatch({ type: setActive, index: 7 });
+            alert("Bạn đã đăng nhập thành công!"); // Thông báo đăng nhập thành công
+          }}
           isActive={state[7] === "red"}
         />
       )}
-      <Modal
-        open={open}
-        onClose={(event, reason) => {
-          if (reason !== "backdropClick") {
-            handleClose(); // chỉ đóng nếu không phải do click ra ngoài
-          }
-        }}
-      >
-        <Box
-          sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            bgcolor: "background.paper",
-            boxShadow: 24,
-            borderRadius: 2,
-            p: 4,
-            width: 350,
-          }}
-        >
-          <AuthForm onClose={handleClose} />
-        </Box>
-      </Modal>
     </div>
   );
 }
