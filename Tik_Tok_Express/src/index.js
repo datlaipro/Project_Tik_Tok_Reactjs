@@ -7,7 +7,7 @@ const cookieParser = require("cookie-parser");// thư viện cookie-parser để
 
 const path = require('path') // thư viện path để xử lý đường dẫn
 const morgan = require('morgan')//thư viện morgan để log request http từ phía client
-const handlebar = require('express-handlebars')//thư viện express-handlebars để render html view về frontend
+
 
 const cors = require('cors'); // 👈 import thư viện
 app.use(
@@ -19,6 +19,7 @@ app.use(
 const apiCreateAccount = require('./routes/AccountApi/API'); // chỉnh đúng đường dẫn đến file creatAccount.js
 const apiLoginAccount = require('./routes/AccountApi/API'); // chỉnh đúng đường dẫn đến file loginAccount.js
 const apiProfileUser = require('./routes/AccountApi/API') // chỉnh đúng đường dẫn đến file profileController.js
+const apiLogoutUser = require('./routes/AccountApi/API'); // chỉnh đúng đường dẫn đến file logoutController.js
 // const configDB = require('./config/database'); // chỉnh đúng đường dẫn đến file database.js
 const port = process.env.PORT
 app.use(cookieParser());
@@ -30,9 +31,7 @@ app.use(morgan('combined')) // sử dụng morgan với định dạng 'dev' đ�
 app.use('/api', apiCreateAccount); // sử dụng router cho các API liên quan đến đăng kí  tài khoản
 app.use('/api', apiLoginAccount)// sử dụng router cho các API liên quan đến đăng nhập tài khoản
 app.use('/api', apiProfileUser)// sử dụng router cho các API liên quan đến lấy thông tin người dùng đã đăng nhập
-// app.set('views', path.join(__dirname, 'resources\\views')) // thiết lập thư mục chứa view
-// app.engine('handlebars', handlebar.engine()); // đăng ký engine handlebars
-// app.set('view engine', 'handlebars'); // thiết lập view engine là handlebars
+app.use('/api', apiLogoutUser)// sử dụng router cho các API liên quan đến đăng xuất tài khoản
 
 // app.use("/create-account",router ); // sử dụng middleware để phục vụ tệp tĩnh từ thư mục create-account
 app.listen(port, () => {

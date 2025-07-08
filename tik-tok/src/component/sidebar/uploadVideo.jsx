@@ -2,7 +2,7 @@ import Home from "./home";
 import UploadIcon from "@mui/icons-material/Upload";
 import { useState, useRef } from "react";
 
-function UpLoadVideo() {
+function UpLoadVideo({}) {
   const [file, setFile] = useState(null);
   const inputRef = useRef();
 
@@ -13,13 +13,15 @@ function UpLoadVideo() {
   };
 
   const handleClick = () => {
+    // Mở hộp thoại chọn file
     inputRef.current.click();
   };
 
   return (
     <div>
       <button onClick={handleClick}>
-        <UploadIcon style={{ verticalAlign: "middle" }} /> Tải ảnh hoặc video lên
+        <UploadIcon style={{ verticalAlign: "middle" }} /> Tải ảnh hoặc video
+        lên
       </button>
 
       <input

@@ -12,8 +12,8 @@ function authMiddleware(req, res, next) {
             req.user = decoded;     // Gắn thông tin người dùng đã giải mã vào req
             next();                 // Cho phép đi tiếp đến route tiếp theo
         } catch (err) {
-            // console.log("Token verify lỗi:", err.message); // 👈 thêm dòng này
-            res.status(403).json({ message: SECRET_KEY });
+            
+            res.status(403).json({ message: "lỗi hệ thống" });
         }
     }
 

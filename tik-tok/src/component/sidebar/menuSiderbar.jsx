@@ -9,7 +9,7 @@ import EmailIcon from "@mui/icons-material/Email";
 import TelegramIcon from "@mui/icons-material/Telegram";
 import LiveTvIcon from "@mui/icons-material/LiveTv";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-
+import ProfileMenu from "./menuLogOut";
 import Video from "../handleVideo/video";
 import Discover from "./discover";
 import Friend from "./friend";
@@ -18,7 +18,7 @@ import Action from "./action";
 import Messenger from "./messenger";
 import LiveStream from "./liveStream";
 import Profile from "./profile";
-import AuthForm from "./loginAndRegister";
+import LoginAndRegister from "./loginAndRegister";
 
 import { useState, useReducer, useEffect } from "react";
 import { Modal, Box } from "@mui/material"; // ✅ Modal & Box từ MUI
@@ -52,21 +52,26 @@ const reducer = (state, action) => {
 };
 
 function Sidebar() {
+  const [data, setData] = useState("");
   // const [red, setRed] = useState("none"); // sử lí màu sắc của nút đề xuất
   const navigate = useNavigate(); // khởi tạo hook điều hướng
   const [state, dispatch] = useReducer(reducer, stateColor); // sử lí màu sắc của các nút sidebar
   const [login, setLogin] = useState(false); // sử lí trạng thái đăng nhập`]
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false); // sử lí trạng thái mở modal đăng nhập/ đăng kí
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const [loading, setLoading] = useState(true); // 👈 thêm state loading để tránh lỗi hiển thị trạng thái đăng nhập
+  const [anchorEl, setAnchorEl] = useState(null); // trang thái để lưu vị trí click của nút đăng nhập/ đăng kí
+  const opens = Boolean(anchorEl);
 
   // Khi app khởi động, kiểm tra trạng thái đăng nhập
   useEffect(() => {
     axios
       .get("http://localhost:4000/api/profile", { withCredentials: true })
       .then((res) => {
-        console.log("✅ Đã đăng nhập, user:", res.data.user);
+        // console.log("✅ Đã đăng nhập, user:", res.data.user.account);
+        setData(res.data.user.account);
+
         setLogin(true);
         setLoading(false); // ✅ dừng loading sau khi có phản hồi
       })
@@ -112,7 +117,10 @@ function Sidebar() {
         title="Up Load Video"
         handleClick={() => {
           dispatch({ type: setActive, index: 3 });
-          navigate("/upload");
+          
+          // verifyLogin(); // kiểm tra đăng nhập
+          login? navigate("/upload") : handleOpen(); // nếu đã đăng nhập thì chuyển đến trang upload, nếu chưa thì mở modal đăng nhập
+          // navigate("/upload");
         }}
         isActive={state[3] === "red"}
       />
@@ -135,7 +143,7 @@ function Sidebar() {
         isActive={state[6] === "red"}
       />
 
-      {loading ? null : login === false ? (// khi load trang xong mới render 
+      {loading ? null : login === false ? ( // khi load trang xong mới render
         <>
           <Home
             icon={<AccountCircleIcon sx={{ fontSize: 30 }} />}
@@ -167,7 +175,7 @@ function Sidebar() {
                 width: 350,
               }}
             >
-              <AuthForm
+              <LoginAndRegister
                 onClose={handleClose}
                 onLoginSuccess={() => setLogin(true)}
               />
@@ -177,14 +185,37 @@ function Sidebar() {
       ) : (
         <Home
           icon={<AccountCircleIcon sx={{ fontSize: 30 }} />}
-          title="Hồ Sơ"
-          handleClick={() => {
+          title={data}
+          handleClick={(event) => {
             dispatch({ type: setActive, index: 7 });
-            alert("Bạn đã đăng nhập thành công!"); // Thông báo đăng nhập thành công
+            setAnchorEl(event.currentTarget); // mở menu tại vị trí click
           }}
           isActive={state[7] === "red"}
         />
       )}
+      <ProfileMenu // xử lí hiển thị menu đăng xuất và xem hồ sơ
+        anchorEl={anchorEl} // lấy được vị trí click ở trên rồi neo chỗ html này vào
+        open={opens}
+        handleClose={() => {
+          // gọi khi click vào "Hồ sơ" để show trang profile
+          navigate("/profile");
+
+          setAnchorEl(null); // đóng hộp thoại đăng xuất/ hồ sơ
+        }}
+        logOut={() => {
+          // xử lí đăng xuất
+          axios.post(
+            "http://localhost:4000/api/logout",
+            {},
+            {
+              withCredentials: true, // gửi cookie để xác thực đăng xuất
+            }
+          );
+          setLogin(false); // Đặt lại trạng thái đăng nhập
+          setAnchorEl(null); // Đóng menu đăng xuất
+          navigate("/video"); // Chuyển hướng về trang video sau khi đăng xuất
+        }}
+      />
     </div>
   );
 }

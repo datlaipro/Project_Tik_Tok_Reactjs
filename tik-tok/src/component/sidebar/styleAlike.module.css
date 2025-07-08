@@ -3,6 +3,14 @@
   flex-direction: column;
   align-items: flex-start;
   padding: 10px 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 140px;
+  background-color: white;
+  border-right: 1px solid #e5e5e5;
+  z-index: 10;
 }
 
 .wrapper {
@@ -28,4 +36,144 @@
 .active .alike {
   color: #fe2c55;
 }
- 
+
+/* ---------- PROFILE PAGE ---------- */
+
+.profileWrapper {
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  margin-left: 160px; /* Đẩy nội dung sang phải để tránh bị đè bởi sidebar */
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: 30px;
+}
+
+.info h2 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.info p {
+  margin: 4px 0;
+  color: gray;
+}
+
+.buttons {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.iconBtn {
+  cursor: pointer;
+  font-size: 20px;
+}
+
+.stats {
+  margin-top: 10px;
+  display: flex;
+  gap: 30px;
+  font-size: 14px;
+  flex-wrap: wrap;
+}
+
+.bio {
+  margin-top: 10px;
+  color: gray;
+}
+
+/* Tab Video / Yêu thích / Đã thích */
+.tabs {
+  margin-top: 30px;
+  display: flex;
+  gap: 40px;
+  font-weight: bold;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 6px;
+}
+
+.tabs span {
+  cursor: pointer;
+  padding: 6px 4px;
+}
+
+.tabs span:hover {
+  color: #fe2c55;
+}
+
+.activeTab {
+  border-bottom: 2px solid #fe2c55;
+  color: #fe2c55;
+}
+
+.videos {
+  margin-top: 20px;
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.video {
+  position: relative;
+  width: 180px;
+  height: 260px;
+  background: #000;
+  overflow: hidden;
+}
+
+.video video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.views {
+  position: absolute;
+  bottom: 5px;
+  left: 5px;
+  color: white;
+  font-weight: bold;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* ----------- RESPONSIVE ------------ */
+@media (max-width: 768px) {
+  .sidebar {
+    position: static;
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    justify-content: space-around;
+  }
+
+  .profileWrapper {
+    margin-left: 0;
+    padding: 16px;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .tabs {
+    justify-content: center;
+    margin-left: 0;
+    gap: 20px;
+  }
+
+  .stats {
+    justify-content: center;
+  }
+
+  .videos {
+    justify-content: center;
+  }
+}

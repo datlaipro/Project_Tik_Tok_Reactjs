@@ -13,7 +13,7 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import axios from "axios";
 
-export default function AuthForm({ onClose, onLoginSuccess }) {
+export default function LoginAndRegister({ onClose, onLoginSuccess }) {
   // component xử lý đăng nhập và đăng ký tài khoản
   const [errorMessage, setErrorMessage] = useState(""); // Thêm state để lưu thông báo lỗi hoặc thành công
   const [colors, setColors] = useState("success"); // Thêm state để quản lý màu sắc của Alert
@@ -46,7 +46,7 @@ export default function AuthForm({ onClose, onLoginSuccess }) {
               password: formData.password,
             },
             {
-              withCredentials: true, // ✅ Đặt ở đây (object thứ 3) để gủi cookie kèm theo request
+              withCredentials: true, // ✅ Đặt ở đây (object thứ 3) để gủi cookie kèm theo request và trình duyệt sẽ tự động lưu cookie này
             }
           );
           setColors("success"); // Đặt màu sắc cho Alert

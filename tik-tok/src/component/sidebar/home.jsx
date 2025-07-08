@@ -2,7 +2,7 @@ import React from "react";
 
 import { useRef, useState } from "react";
 import styles from "./styleAlike.module.css";
-function Home({ icon, title,className,handleClick ,isActive }) {
+function Home({ icon, title,handleClick ,isActive }) {
  
 
   return (
