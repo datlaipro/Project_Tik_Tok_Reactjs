@@ -7,7 +7,7 @@ async function loginUserDB(username, password) {// Hàm đăng nhập người d
 
     try {
         const [rows] = await connection.query(
-            'SELECT  account, password FROM users WHERE account = ?',
+            'SELECT user_id, account, password FROM users WHERE account = ?',
             [username]
         );
 
@@ -26,11 +26,11 @@ async function loginUserDB(username, password) {// Hàm đăng nhập người d
         } else {
             // Tạo token JWT nếu mật khẩu đúng
             const token = jwt.sign(
-                { id: user.userId, account: user.account }, SECRET_KEY, { expiresIn: '1h' })
+                { user_id: user.user_id, account: user.account }, SECRET_KEY, { expiresIn: '1h' })
 
 
             // Nếu đúng, trả về thông tin người dùng
-            return { success: true, userId: user.id, account: user.account, token: token };
+            return { success: true, userId: user.user_id, account: user.account, token: token };
         }
 
 

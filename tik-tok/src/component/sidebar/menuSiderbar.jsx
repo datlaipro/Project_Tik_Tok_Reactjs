@@ -52,7 +52,7 @@ const reducer = (state, action) => {
 };
 
 function Sidebar() {
-  const [data, setData] = useState("");
+  const [data, setData] = useState(""); // trang thái lưu tên đăng nhập của người dùng
   // const [red, setRed] = useState("none"); // sử lí màu sắc của nút đề xuất
   const navigate = useNavigate(); // khởi tạo hook điều hướng
   const [state, dispatch] = useReducer(reducer, stateColor); // sử lí màu sắc của các nút sidebar
@@ -117,10 +117,9 @@ function Sidebar() {
         title="Up Load Video"
         handleClick={() => {
           dispatch({ type: setActive, index: 3 });
-          
+
           // verifyLogin(); // kiểm tra đăng nhập
-          login? navigate("/upload") : handleOpen(); // nếu đã đăng nhập thì chuyển đến trang upload, nếu chưa thì mở modal đăng nhập
-          // navigate("/upload");
+          login ? navigate("/upload") : handleOpen(); // nếu đã đăng nhập thì chuyển đến trang upload, nếu chưa thì mở modal đăng nhập
         }}
         isActive={state[3] === "red"}
       />
@@ -178,6 +177,7 @@ function Sidebar() {
               <LoginAndRegister
                 onClose={handleClose}
                 onLoginSuccess={() => setLogin(true)}
+                username={() => setData(data)} // truyền hàm để cập nhật tên đăng nhập
               />
             </Box>
           </Modal>

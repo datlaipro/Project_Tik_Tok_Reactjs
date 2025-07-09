@@ -1,20 +1,40 @@
 import Home from "./home";
 import UploadIcon from "@mui/icons-material/Upload";
 import { useState, useRef } from "react";
-
-function UpLoadVideo({}) {
+import axios from "axios";
+function UpLoadVideo() {
   const [file, setFile] = useState(null);
   const inputRef = useRef();
 
   const handleChange = (e) => {
     const selectedFile = e.target.files[0];
     setFile(selectedFile);
-    console.log("File được chọn:", selectedFile);
+    // console.log("File được chọn:", selectedFile);
   };
 
-  const handleClick = () => {
+  const handleClick = async () => {
     // Mở hộp thoại chọn file
     inputRef.current.click();
+    if (!file) return alert("Chưa chọn file!");
+
+    const formData = new FormData();
+    formData.append("video", file); // tên "video" phải trùng với backend: upload.single('video')
+
+    try {
+      const res = await axios.post(
+        "http://localhost:4000/api/upload",
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+          withCredentials: true,
+        }
+      );
+      alert("Upload thành công!");
+      console.log("URL từ Cloudinary:", res.data.url);
+    } catch (err) {
+      console.error("Lỗi upload:", err);
+      alert("Upload thất bại");
+    }
   };
 
   return (

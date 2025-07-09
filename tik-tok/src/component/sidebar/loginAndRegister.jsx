@@ -13,7 +13,7 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import axios from "axios";
 
-export default function LoginAndRegister({ onClose, onLoginSuccess }) {
+export default function LoginAndRegister({ onClose, onLoginSuccess,username }) {
   // component xử lý đăng nhập và đăng ký tài khoản
   const [errorMessage, setErrorMessage] = useState(""); // Thêm state để lưu thông báo lỗi hoặc thành công
   const [colors, setColors] = useState("success"); // Thêm state để quản lý màu sắc của Alert
@@ -49,6 +49,7 @@ export default function LoginAndRegister({ onClose, onLoginSuccess }) {
               withCredentials: true, // ✅ Đặt ở đây (object thứ 3) để gủi cookie kèm theo request và trình duyệt sẽ tự động lưu cookie này
             }
           );
+          username();
           setColors("success"); // Đặt màu sắc cho Alert
           setOpenSnackbar(true); // 👈 Hiển thị thông báo sau khi đăng nhập thành công
           setErrorMessage("Đăng nhập tài khoản thành công! "); // hiển thị thông báo đăng nhập thành công
