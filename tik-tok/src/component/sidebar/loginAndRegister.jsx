@@ -48,8 +48,9 @@ export default function LoginAndRegister({ onClose, onLoginSuccess,username }) {
             {
               withCredentials: true, // ✅ Đặt ở đây (object thứ 3) để gủi cookie kèm theo request và trình duyệt sẽ tự động lưu cookie này
             }
-          );
-          username();
+          ).then((res) => {
+          });
+          // username();
           setColors("success"); // Đặt màu sắc cho Alert
           setOpenSnackbar(true); // 👈 Hiển thị thông báo sau khi đăng nhập thành công
           setErrorMessage("Đăng nhập tài khoản thành công! "); // hiển thị thông báo đăng nhập thành công

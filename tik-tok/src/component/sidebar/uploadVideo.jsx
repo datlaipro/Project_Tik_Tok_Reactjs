@@ -1,76 +1,101 @@
-import Home from "./home";
-import UploadIcon from "@mui/icons-material/Upload";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import axios from "axios";
+import UploadIcon from "@mui/icons-material/Upload";
+import styles from "./styleAlike.module.css"; // CSS module riêng
+import api from "../../api/api";
 function UpLoadVideo() {
   const [file, setFile] = useState(null);
-  const inputRef = useRef();
+  const [previewURL, setPreviewURL] = useState("");
+  const [visibility, setVisibility] = useState("public");
+  const [loading, setLoading] = useState(false);
+  const inputRef = useRef(null);
 
-  const handleChange = (e) => {
-    const selectedFile = e.target.files[0];
-    setFile(selectedFile);
-    // console.log("File được chọn:", selectedFile);
+  useEffect(() => {
+    if (!previewURL) return;
+    return () => URL.revokeObjectURL(previewURL);
+  }, [previewURL]);
+
+  const handleFileChange = (e) => {
+    const f = e.target.files[0];
+    if (!f) return;
+    setFile(f);
+    setPreviewURL(URL.createObjectURL(f));
   };
 
-  const handleClick = async () => {
-    // Mở hộp thoại chọn file
-    inputRef.current.click();
-    if (!file) return alert("Chưa chọn file!");
-
+  const handleUpload = async () => {
+    if (!file) return alert("Bạn chưa chọn file!");
     const formData = new FormData();
-    formData.append("video", file); // tên "video" phải trùng với backend: upload.single('video')
+    formData.append("video", file);
+    formData.append("visibility", visibility);
 
     try {
-      const res = await axios.post(
-        "http://localhost:4000/api/upload",
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-          withCredentials: true,
-        }
-      );
+      setLoading(true);
+      await api.post("/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+        withCredentials: true,
+      });
       alert("Upload thành công!");
-      console.log("URL từ Cloudinary:", res.data.url);
+      setFile(null);
+      setPreviewURL("");
+      if (inputRef.current) {
+        inputRef.current.value = "";
+      }
     } catch (err) {
-      console.error("Lỗi upload:", err);
+      console.error("Lỗi khi upload:", err);
       alert("Upload thất bại");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div>
-      <button onClick={handleClick}>
-        <UploadIcon style={{ verticalAlign: "middle" }} /> Tải ảnh hoặc video
-        lên
+    <div className={styles.uploadWrapper}>
+      <button
+        className={styles.pickBtn}
+        onClick={() => inputRef.current.click()}
+      >
+        <UploadIcon sx={{ fontSize: 18, verticalAlign: "middle" }} /> Tải ảnh
+        hoặc video lên
       </button>
-
       <input
-        type="file"
-        accept="video/*"
         ref={inputRef}
-        onChange={handleChange}
+        type="file"
+        accept="image/*,video/*"
+        onChange={handleFileChange}
         style={{ display: "none" }}
       />
 
       {file && (
-        <div style={{ marginTop: "10px" }}>
+        <div className={styles.previewBox}>
           {file.type.startsWith("image/") ? (
-            <img
-              src={URL.createObjectURL(file)}
-              alt="Ảnh đã chọn"
-              style={{ maxWidth: "200px" }}
-            />
-          ) : file.type.startsWith("video/") ? (
-            <video
-              controls
-              src={URL.createObjectURL(file)}
-              style={{ maxWidth: "300px" }}
-            />
+            <img src={previewURL} alt="preview" />
           ) : (
-            <p>File không phải ảnh hoặc video.</p>
+            <video src={previewURL} controls />
           )}
         </div>
       )}
+
+      <label htmlFor="visibility" className={styles.label}>
+        Ai có thể xem video này
+      </label>
+      <select
+        id="visibility"
+        value={visibility}
+        onChange={(e) => setVisibility(e.target.value)}
+        className={styles.select}
+      >
+        <option value="public">Mọi người</option>
+        <option value="friends">Bạn bè (follower bạn follow lại)</option>
+        <option value="private">Chỉ mình bạn</option>
+      </select>
+
+      <button
+        className={styles.btnPost}
+        onClick={handleUpload}
+        disabled={loading}
+      >
+        {loading ? "Đang đăng..." : "Đăng"}
+      </button>
     </div>
   );
 }

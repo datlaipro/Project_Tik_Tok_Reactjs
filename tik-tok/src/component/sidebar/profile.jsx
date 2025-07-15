@@ -5,7 +5,6 @@ import Button from "@mui/material/Button";
 import PersonAddAltIcon from "@mui/icons-material/PersonAddAlt";
 import SettingsIcon from "@mui/icons-material/Settings";
 
-// import "./yourGlobalStyle.css"; // File bạn vừa gửi (đặt lại tên đúng theo bạn đang dùng)
 
 
 const Profile = () => {

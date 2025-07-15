@@ -1,12 +1,11 @@
 const configDB = require('../config/database'); // chỉnh đúng đường dẫn đến file database.js
 
-async function upLoadVideoDB(videoUrl, userId) {
+async function upLoadVideoDB(videoUrl, visibility, userId) {
 
-    const connection = await configDB();
     try {
-        const result = await connection.query(
-            "INSERT INTO video (path, user_id) VALUES (?, ?)",
-            [videoUrl, userId]
+        const result = await configDB.query(
+            "INSERT INTO video (path,visibility, user_id) VALUES (?, ?,?)",
+            [videoUrl,visibility, userId]
         );
         return { success: true, message: "Video đã được lưu thành công", videoId: result[0].insertId };
 

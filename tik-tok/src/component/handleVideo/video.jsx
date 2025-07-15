@@ -1,79 +1,83 @@
 import React, { useRef, useState, useEffect } from "react";
+import axios from "axios";
 import SidebarAction from "../home/sidebarAction";
-import SuccessRegister from "../Notification/loginSuccess"; // Import thông báo đăng ký thành công
-import AuthForm from "../sidebar/loginAndRegister"; // Import form đăng nhập/đăng ký
-
-const videos = [
-  "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-  "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
-];
 
 function Video() {
+  const [path, setPath] = useState([]);
+
   const containerRef = useRef(null);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const videoRefs = useRef([]); // danh sách ref của từng video block
+  const videoRefs = useRef([]); // Mảng để lưu trữ các phần tử video DOM
 
-  const scrollToIndex = (index) => {
-    // xử lý cuộn đến video theo index
-    const videoEl = videoRefs.current[index];
-    if (videoEl) {
-      videoEl.scrollIntoView({ behavior: "smooth" });
-      setCurrentIndex(index);
-    }
-  };
-
-  const handleScrollUp = () => {
-    scrollToIndex(currentIndex - 1);
-  };
-
-  const handleScrollDown = () => {
-    scrollToIndex(currentIndex + 1);
-  };
-
+  /* ============ I. FETCH VIDEO MỘT LẦN ============ */ // NEW
   useEffect(() => {
-    // xử lý Intersection Observer để tự động play/pause video khi cuộn
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting) // kiểm tra video có đang hiển thị hay không
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+    const controller = new AbortController(); // Tạo controller để hủy yêu cầu bất đồng bộ khi component unmount
 
-        // Tự động play/pause
+    axios
+      .get("http://localhost:4000/api/requestVideo", {
+        signal: controller.signal, // Thêm signal để hủy yêu cầu bất đồng bộ nếu cần
+      })
+      .then((res) => {
+        const videoUrls = res.data.path.map((i) => i.path); // chuyển đổi kết quả là obj từ api trả về thành mảng đường dẫn video
+        setPath(videoUrls);
+      })
+      .catch((err) => {
+        if (!axios.isCancel(err)) console.error("Lỗi khi lấy video:", err);
+      });
+
+    return () => controller.abort(); // Hủy yêu cầu khi component unmount
+  }, []); // ← KHÔNG có path
+
+  /* ============ II. SETUP OBSERVER KHI ĐÃ CÓ path ============ */ // NEW
+  useEffect(() => {
+    if (path.length === 0) return;
+
+    const observer = new IntersectionObserver( // obj của trình duyệt để theo dõi các phần tử video
+      (entries) => {
+        const visible = entries // Lọc các video đang hiển thị
+          .filter((e) => e.isIntersecting) // isIntersecting là true nếu video đang hiển thị trong viewport
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio); // Sắp xếp theo tỷ lệ hiển thị (độ lớn của phần tử trong viewport)
+        // Nếu có nhiều video hiển thị, chọn video có tỷ lệ hiển thị lớn nhất(có tác dụng trong trường hợp chuyển đổi giữa các video vì lúc đó đang có 2 video hiển thị )
+
         videoRefs.current.forEach((el, idx) => {
-          // duyệt qua từng thẻ video
-          if (!el) return;
+          // duyệt qua từng video để phát hoặc tạm dừng
+          // el là phần tử DOM của video, idx là chỉ số của video trong mảng path
+
+          if (!el) return; // Nếu không có el thì bỏ qua
           const videoTag = el.querySelector("video");
           if (!videoTag) return;
 
           const isVisible = visible.find(
-            (entry) => Number(entry.target.dataset.index) === idx
+            (v) => Number(v.target.dataset.index) === idx // Kiểm tra xem video này có trong danh sách visible không
           );
 
-          if (isVisible) {
-            videoTag.play().catch(() => {});
-          } else {
-            videoTag.pause();
-          }
+          isVisible ? videoTag.play().catch(() => {}) : videoTag.pause();
         });
 
-        // Cập nhật index đang hiển thị
         if (visible.length > 0) {
-          const index = Number(visible[0].target.dataset.index);
-          setCurrentIndex(index);
+          const idx = Number(visible[0].target.dataset.index); // Lấy chỉ số của video đang hiển thị nhiều nhất
+          setCurrentIndex(idx);
         }
       },
-      {
-        threshold: 0.6,
-      }
+      { threshold: 0.6 } // có nghĩa là video sẽ được coi là hiển thị khi 60%(threshold: 0.6 ) diện tích của nó nằm trong viewport
     );
 
-    videoRefs.current.forEach((el) => {
-      if (el) observer.observe(el);
-    });
+    videoRefs.current.forEach((el) => el && observer.observe(el));
+    return () => observer.disconnect(); // Ngắt kết nối observer khi component unmount
+  }, [path]); // chạy đúng 1 lần sau khi đã có danh sách video
 
-    return () => observer.disconnect();
-  }, []);
- 
+  /* ---------- Hàm cuộn ---------- */
+  const scrollToIndex = (idx) => {
+    const el = videoRefs.current[idx]; // Lấy phần tử video theo chỉ số idx
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+      setCurrentIndex(idx);
+    }
+  };
+  const handleScrollUp = () => scrollToIndex(currentIndex - 1);
+  const handleScrollDown = () => scrollToIndex(currentIndex + 1);
+
+  /* ---------- UI ---------- */
   return (
     <div
       ref={containerRef}
@@ -84,13 +88,11 @@ function Video() {
         scrollSnapType: "y mandatory",
       }}
     >
-      
-
-      {videos.map((src, index) => (
+      {path.map((src, index) => (
         <div
           key={index}
-          data-index={index}
-          ref={(el) => (videoRefs.current[index] = el)}
+          data-index={index} // Dùng để xác định chỉ số của video trong mảng path
+          ref={(el) => (videoRefs.current[index] = el)} // Lưu phần tử DOM của video vào mảng videoRefs
           style={{
             height: "100vh",
             width: "100vw",
@@ -115,6 +117,10 @@ function Video() {
             }}
           >
             <video
+              onError={() => {
+                handleScrollDown();
+                // setCurrentIndex(currentIndex);
+              }} // Nếu video không thể tải được thì tự động cuộn xuống video tiếp theo
               src={src}
               width="540"
               height="700"
@@ -126,63 +132,57 @@ function Video() {
             />
             <div
               style={{
-                marginLeft: "20px",
+                marginLeft: 20,
                 display: "flex",
                 flexDirection: "column",
-                gap: "15px",
+                gap: 15,
                 alignItems: "center",
               }}
             >
               <SidebarAction />
             </div>
           </div>
-
-          {/* Nút cuộn lên/xuống */}
-          <div
-            style={{
-              position: "absolute",
-              right: "20px",
-              top: "45%",
-              zIndex: 999,
-              display: "flex",
-              flexDirection: "column",
-              gap: "10px",
-            }}
-          >
-            <button
-              onClick={handleScrollUp}
-              style={{
-                display: "block",
-                backgroundColor: "rgba(255,0,0,0.1)",
-                color: "black",
-                fontSize: "20px",
-                padding: "10px",
-                border: "1px solid black",
-                borderRadius: "50%",
-                zIndex: 9999,
-              }}
-            >
-              ⬆️
-            </button>
-
-            <button
-              onClick={handleScrollDown}
-              disabled={currentIndex === videos.length - 1}
-              style={{
-                backgroundColor: "rgba(255,0,0,0.1)",
-                fontSize: "20px",
-                padding: "10px",
-                border: "1px solid black",
-                borderRadius: "50%",
-              }}
-            >
-              ⬇️
-            </button>
-          </div>
         </div>
       ))}
+
+      {/* === NÚT CUỘN GIỮ NGUYÊN === */}
+      <div
+        style={{
+          position: "fixed",
+          right: 20,
+          top: "45%",
+          display: "flex",
+          flexDirection: "column",
+          gap: 10,
+          zIndex: 9999,
+        }}
+      >
+        <button
+          onClick={handleScrollUp}
+          disabled={currentIndex === -1} // khi loại video đầu tiên thì không cho cuộn lên nữa
+          style={btnStyle}
+        >
+          ⬆️
+        </button>
+        <button
+          onClick={handleScrollDown}
+          disabled={currentIndex === path.length } // khi loai video cuối cùng thì không cho cuộn xuống nữa
+          style={btnStyle}
+        >
+          ⬇️
+        </button>
+      </div>
     </div>
   );
 }
+
+const btnStyle = {
+  background: "rgba(255,0,0,0.1)",
+  border: "1px solid black",
+  borderRadius: "50%",
+  fontSize: 20,
+  padding: 10,
+  cursor: "pointer",
+};
 
 export default Video;

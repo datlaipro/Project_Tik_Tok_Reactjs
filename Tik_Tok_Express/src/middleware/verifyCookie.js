@@ -6,6 +6,7 @@ function authMiddleware(req, res, next) {
 
     if (!token) {
         return res.status(401).json({ message: "Chưa đăng nhập" });
+        
     } else {
         try {
             const decoded = jwt.verify(token, SECRET_KEY);

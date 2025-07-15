@@ -1,13 +1,14 @@
-const mysql = require('mysql2/promise'); // dùng mysql2/promise mới có await// Create the connection to database
-require('dotenv').config(); // Thư viện dotenv để đọc biến môi trường từ file .env
-async function configDB() {
-  const connection = await mysql.createConnection({
-    host: process.env.DB_HOST || 'localhost', // Lấy host từ biến môi trường hoặc mặc định là localhost
-    user: process.env.DB_USER,
-    database: process.env.DB_NAME, // Tên cơ sở dữ liệu của bạn
-    password: process.env.DB_PASSWORD,  // Mật khẩu của bạn
-  });
-  return connection;
-}
+const mysql = require("mysql2/promise");
+require("dotenv").config();
 
-module.exports = configDB;
+const pool = mysql.createPool({
+  host: process.env.DB_HOST || "localhost",
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  waitForConnections: true,
+  connectionLimit: 10,   // tuỳ bài toán & cấu hình server
+  queueLimit: 0
+});
+
+module.exports = pool;     // KHÔNG export hàm tạo mới, mà export chính pool

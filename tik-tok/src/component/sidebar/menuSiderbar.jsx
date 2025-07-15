@@ -67,10 +67,10 @@ function Sidebar() {
   // Khi app khởi động, kiểm tra trạng thái đăng nhập
   useEffect(() => {
     axios
-      .get("http://localhost:4000/api/profile", { withCredentials: true })
+      .get("http://localhost:4000/api/refresh/profile", { withCredentials: true })
       .then((res) => {
         // console.log("✅ Đã đăng nhập, user:", res.data.user.account);
-        setData(res.data.user.account);
+        setData(res.data.user.account); // trả về tên đăng nhập của người dùng
 
         setLogin(true);
         setLoading(false); // ✅ dừng loading sau khi có phản hồi
@@ -176,8 +176,13 @@ function Sidebar() {
             >
               <LoginAndRegister
                 onClose={handleClose}
-                onLoginSuccess={() => setLogin(true)}
-                username={() => setData(data)} // truyền hàm để cập nhật tên đăng nhập
+                onLoginSuccess={() => {
+                  setLogin(true);
+                  // setLoading(false); // ✅ dừng loading sau khi đăng nhập thành công
+                }}
+                // username={() => {
+                //   // setData(data);
+                // }} // truyền hàm để cập nhật tên đăng nhập
               />
             </Box>
           </Modal>
@@ -196,16 +201,17 @@ function Sidebar() {
       <ProfileMenu // xử lí hiển thị menu đăng xuất và xem hồ sơ
         anchorEl={anchorEl} // lấy được vị trí click ở trên rồi neo chỗ html này vào
         open={opens}
-        handleClose={() => {
-          // gọi khi click vào "Hồ sơ" để show trang profile
-          navigate("/profile");
+        handleClose={(event, reason) => {
+          if (reason !== "backdropClick") {
+            navigate("/profile"); // gọi khi click vào "Hồ sơ" để show trang profile
+          }
 
           setAnchorEl(null); // đóng hộp thoại đăng xuất/ hồ sơ
         }}
         logOut={() => {
           // xử lí đăng xuất
           axios.post(
-            "http://localhost:4000/api/logout",
+            "http://localhost:4000/api/refresh/logout",
             {},
             {
               withCredentials: true, // gửi cookie để xác thực đăng xuất

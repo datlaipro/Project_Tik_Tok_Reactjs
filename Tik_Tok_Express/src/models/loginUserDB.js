@@ -1,12 +1,13 @@
 const configDB = require('../config/database');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const REFRESH_EXPIRE = '7d';// Thời gian hết hạn của token refresh
+
 const SECRET_KEY = process.env.JWT_SECRET;
 async function loginUserDB(username, password) {// Hàm đăng nhập người dùng
-    const connection = await configDB();
 
     try {
-        const [rows] = await connection.query(
+        const [rows] = await configDB.query(
             'SELECT user_id, account, password FROM users WHERE account = ?',
             [username]
         );
@@ -26,11 +27,22 @@ async function loginUserDB(username, password) {// Hàm đăng nhập người d
         } else {
             // Tạo token JWT nếu mật khẩu đúng
             const token = jwt.sign(
-                { user_id: user.user_id, account: user.account }, SECRET_KEY, { expiresIn: '1h' })
+                { user_id: user.user_id, account: user.account }, SECRET_KEY, { expiresIn: '5m' })
 
+            const refreshToken = jwt.sign(// Tạo token refresh
+                { user_id: user.user_id, account: user.account },
+                SECRET_KEY,
+                { expiresIn: REFRESH_EXPIRE }
+            );
+            const hashedRT = await bcrypt.hash(refreshToken, 10);
+            // Mã hoá refresh token trước khi lưu vào DB
+            await configDB.query(
+                'UPDATE users SET refresh_token = ? WHERE user_id = ?',
+                [hashedRT, user.user_id]
+            );
 
             // Nếu đúng, trả về thông tin người dùng
-            return { success: true, userId: user.user_id, account: user.account, token: token };
+            return { success: true, userId: user.user_id, account: user.account, token: token, refreshToken: refreshToken, message: 'Đăng nhập thành công' };
         }
 
 
