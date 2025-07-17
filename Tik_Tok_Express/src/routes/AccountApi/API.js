@@ -15,5 +15,8 @@ router.get("/refresh/profile", verifyRefreshToken, profileUser.profileController
 router.post('/refresh/logout', verifyRefreshToken, logoutController.logOutAccount); // Đường dẫn API để đăng xuất người dùng
 router.post('/upload', authMiddleware, upload.single('video'), upLoadVideo); // Đường dẫn API để upload video
 router.get('/requestVideo', videoPublicController.videoPublic); // Đường dẫn API để render video
+router.get('/refresh/token', verifyRefreshToken, (req, res) => {// Đường dẫn API để làm mới token
+  res.json({ success: true, message: 'Token refreshed' });
+});
 module.exports = router;
 

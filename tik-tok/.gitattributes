@@ -1,0 +1,10 @@
+# Đảm bảo tất cả các file text dùng LF làm dấu xuống dòng
+* text=auto eol=lf
+
+# Nếu muốn chắc chắn file JS, JSX, CSS, HTML... đều dùng LF
+*.js   text eol=lf
+*.jsx  text eol=lf
+*.css  text eol=lf
+*.html text eol=lf
+*.json text eol=lf
+*.md   text eol=lf

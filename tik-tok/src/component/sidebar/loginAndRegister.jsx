@@ -13,7 +13,7 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import axios from "axios";
 
-export default function LoginAndRegister({ onClose, onLoginSuccess,username }) {
+export default function LoginAndRegister({ onClose, onLoginSuccess }) {
   // component xử lý đăng nhập và đăng ký tài khoản
   const [errorMessage, setErrorMessage] = useState(""); // Thêm state để lưu thông báo lỗi hoặc thành công
   const [colors, setColors] = useState("success"); // Thêm state để quản lý màu sắc của Alert

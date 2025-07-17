@@ -1,25 +1,49 @@
 import { useState, useRef, useEffect } from "react";
-import axios from "axios";
 import UploadIcon from "@mui/icons-material/Upload";
 import styles from "./styleAlike.module.css"; // CSS module riêng
 import api from "../../api/api";
+import { useContext } from "react";
+
+import { MyContext } from "../../context/myContext";
 function UpLoadVideo() {
+  const { setSharedData } = useContext(MyContext);
   const [file, setFile] = useState(null);
-  const [previewURL, setPreviewURL] = useState("");
+  const [previewURL, setPreviewURL] = useState(""); // quản lý URL tạm thời để xem trước video
   const [visibility, setVisibility] = useState("public");
+  const [arrFiles, setArrFiles] = useState([]); // danh sách các file thực tế  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  // const [disabled, setDisabled] = useState(false);
   const inputRef = useRef(null);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     if (!previewURL) return;
+
     return () => URL.revokeObjectURL(previewURL);
   }, [previewURL]);
+  
 
   const handleFileChange = (e) => {
     const f = e.target.files[0];
     if (!f) return;
+    const preview = URL.createObjectURL(f);
+    // Kiểm tra xem file đã tồn tại trong arrFiles chưa
+    const isDuplicate = arrFiles.some(
+      (file) =>
+        file.name === f.name &&
+        file.size === f.size &&
+        file.lastModified === f.lastModified
+    );
+    if (isDuplicate) {
+      alert("Bạn phải thay đổi video mới thì mới được đăng!");
+      setMessage("none");
+      setPreviewURL(preview);
+
+      return;
+    }
     setFile(f);
-    setPreviewURL(URL.createObjectURL(f));
+    setPreviewURL(preview);
+    setMessage("block");
   };
 
   const handleUpload = async () => {
@@ -30,14 +54,15 @@ function UpLoadVideo() {
 
     try {
       setLoading(true);
-      await api.post("/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-        withCredentials: true,
-      });
+      setSharedData(true)
+      await api.post("/upload", formData); // gọi đến API upload video từ api.js
       alert("Upload thành công!");
-      setFile(null);
+
+      setArrFiles((prev) => [...prev, file]); // thêm url video do người dùng đã upload để so sánh tránh up trùng video
+      setFile(null); // reset file sau khi upload
       setPreviewURL("");
       if (inputRef.current) {
+        // tránh lỗi giao diện khi upload xong (khi render lại thì sẽ lỗi err nếu không có dk này )
         inputRef.current.value = "";
       }
     } catch (err) {
@@ -45,6 +70,7 @@ function UpLoadVideo() {
       alert("Upload thất bại");
     } finally {
       setLoading(false);
+      setSharedData(false)
     }
   };
 
@@ -93,6 +119,7 @@ function UpLoadVideo() {
         className={styles.btnPost}
         onClick={handleUpload}
         disabled={loading}
+        style={{ display: message }}
       >
         {loading ? "Đang đăng..." : "Đăng"}
       </button>

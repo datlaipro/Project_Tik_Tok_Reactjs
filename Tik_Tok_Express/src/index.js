@@ -22,6 +22,7 @@ const apiProfileUser = require('./routes/AccountApi/API') // chỉnh đúng đư
 const apiLogoutUser = require('./routes/AccountApi/API'); // chỉnh đúng đường dẫn đến file logoutController.js
 const upLoadVideo = require('./routes/AccountApi/API'); // chỉnh đúng đường dẫn đến file uploadVideoControler.js
 const renderVideoController = require('./routes/AccountApi/API'); // chỉnh đúng đường dẫn đến file renderVideoController.js
+const authRoutes=require('./routes/AccountApi/API');
 const port = process.env.PORT
 app.use(cookieParser());
 
@@ -35,7 +36,7 @@ app.use('/api', apiProfileUser)// sử dụng router cho các API liên quan đ�
 app.use('/api', apiLogoutUser)// sử dụng router cho các API liên quan đến đăng xuất tài khoản
 app.use('/api', upLoadVideo)// sử dụng router cho các API liên quan đến upload video
 app.use('/api', renderVideoController)// sử dụng router cho các API liên quan đến render video
-// app.use("/create-account",router ); // sử dụng middleware để phục vụ tệp tĩnh từ thư mục create-account
+app.use('/auth', authRoutes); // sử dụng router cho các API liên quan đến xác thực người dùng
 app.listen(port, () => {
 
   console.log(`Server running at http://localhost:${port}`);

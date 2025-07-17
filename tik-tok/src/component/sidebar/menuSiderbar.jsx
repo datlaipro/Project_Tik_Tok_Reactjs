@@ -19,7 +19,8 @@ import Messenger from "./messenger";
 import LiveStream from "./liveStream";
 import Profile from "./profile";
 import LoginAndRegister from "./loginAndRegister";
-
+import { useContext } from "react";
+import { MyContext } from "../../context/myContext";
 import { useState, useReducer, useEffect } from "react";
 import { Modal, Box } from "@mui/material"; // ✅ Modal & Box từ MUI
 import {
@@ -53,7 +54,7 @@ const reducer = (state, action) => {
 
 function Sidebar() {
   const [data, setData] = useState(""); // trang thái lưu tên đăng nhập của người dùng
-  // const [red, setRed] = useState("none"); // sử lí màu sắc của nút đề xuất
+  const { sharedData } = useContext(MyContext);
   const navigate = useNavigate(); // khởi tạo hook điều hướng
   const [state, dispatch] = useReducer(reducer, stateColor); // sử lí màu sắc của các nút sidebar
   const [login, setLogin] = useState(false); // sử lí trạng thái đăng nhập`]
@@ -62,12 +63,15 @@ function Sidebar() {
   const handleClose = () => setOpen(false);
   const [loading, setLoading] = useState(true); // 👈 thêm state loading để tránh lỗi hiển thị trạng thái đăng nhập
   const [anchorEl, setAnchorEl] = useState(null); // trang thái để lưu vị trí click của nút đăng nhập/ đăng kí
+  const [stateUpload, setStateUpload] = useState(false);
   const opens = Boolean(anchorEl);
 
   // Khi app khởi động, kiểm tra trạng thái đăng nhập
   useEffect(() => {
     axios
-      .get("http://localhost:4000/api/refresh/profile", { withCredentials: true })
+      .get("http://localhost:4000/api/refresh/profile", {
+        withCredentials: true,
+      })
       .then((res) => {
         // console.log("✅ Đã đăng nhập, user:", res.data.user.account);
         setData(res.data.user.account); // trả về tên đăng nhập của người dùng
@@ -120,6 +124,12 @@ function Sidebar() {
 
           // verifyLogin(); // kiểm tra đăng nhập
           login ? navigate("/upload") : handleOpen(); // nếu đã đăng nhập thì chuyển đến trang upload, nếu chưa thì mở modal đăng nhập
+          if (sharedData) {
+            alert("chưa upload xong video ")
+            navigate("/video")
+          }else{
+            navigate("/upload")
+          }
         }}
         isActive={state[3] === "red"}
       />
@@ -178,11 +188,7 @@ function Sidebar() {
                 onClose={handleClose}
                 onLoginSuccess={() => {
                   setLogin(true);
-                  // setLoading(false); // ✅ dừng loading sau khi đăng nhập thành công
                 }}
-                // username={() => {
-                //   // setData(data);
-                // }} // truyền hàm để cập nhật tên đăng nhập
               />
             </Box>
           </Modal>
