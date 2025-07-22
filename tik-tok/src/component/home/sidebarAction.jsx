@@ -5,7 +5,7 @@ import Like from "../handleVideo/like";
 import Share from "../handleVideo/share";
 import Video from "../handleVideo/video";
 import BackgroundMusic from "../handleVideo/backgroundMusic";
-function SidebarAction() {
+function SidebarAction({ dataLike, numberLike }) {
   return (
     <div>
       <section
@@ -22,13 +22,12 @@ function SidebarAction() {
         }}
       >
         <AccountUser />
-        <Like />
+        <Like idVideo={dataLike} numberLike={numberLike} />
         <Comment />
         <Share />
         <Bookmark />
         <BackgroundMusic />
       </section>
-      
     </div>
   );
 }

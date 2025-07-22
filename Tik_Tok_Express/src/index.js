@@ -23,6 +23,7 @@ const apiLogoutUser = require('./routes/AccountApi/API'); // chỉnh đúng đư
 const upLoadVideo = require('./routes/AccountApi/API'); // chỉnh đúng đường dẫn đến file uploadVideoControler.js
 const renderVideoController = require('./routes/AccountApi/API'); // chỉnh đúng đường dẫn đến file renderVideoController.js
 const authRoutes=require('./routes/AccountApi/API');
+const emotionalUpdates= require('./routes/AccountApi/API');//  chỉnh đúng đường dẫn đến file update like
 const port = process.env.PORT
 app.use(cookieParser());
 
@@ -37,6 +38,7 @@ app.use('/api', apiLogoutUser)// sử dụng router cho các API liên quan đ�
 app.use('/api', upLoadVideo)// sử dụng router cho các API liên quan đến upload video
 app.use('/api', renderVideoController)// sử dụng router cho các API liên quan đến render video
 app.use('/auth', authRoutes); // sử dụng router cho các API liên quan đến xác thực người dùng
+app.use('/api', emotionalUpdates);// router cho cập nhật like 
 app.listen(port, () => {
 
   console.log(`Server running at http://localhost:${port}`);

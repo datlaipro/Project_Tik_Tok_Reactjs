@@ -3,32 +3,56 @@ import axios from "axios";
 import SidebarAction from "../home/sidebarAction";
 
 function Video() {
-  const [path, setPath] = useState([]);
-
+  const [path, setPath] = useState([]); // lưu danh sách video để hiển thị ra giao diện
+  const [lastId, setLastId] = useState(0); // lưu vị trí video cuối để lần sau gọi api từ video tiếp theo trong db
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoading, setIsLoading] = useState(false); // ✅ Chống gọi liên tục
   const containerRef = useRef(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const videoRefs = useRef([]); // Mảng để lưu trữ các phần tử video DOM
+  const videoRefs = useRef({}); // ✅ Sửa thành object thay vì array
+  const [currentId, setCurrentId] = useState(null); // ✅ Lưu id_video thay vì index
+ 
+  // ✅ Gọi API để lấy video
+  const fetchVideos = async () => {
+    if (isLoading) return; // Tránh gọi chồng nếu gọi api xong thì mới cho gọi tiếp
+    setIsLoading(true);
+    try {
+      const res = await axios.get(
+        `http://localhost:4000/api/requestVideo?lastId=${lastId}`
+      );
 
-  /* ============ I. FETCH VIDEO MỘT LẦN ============ */ // NEW
-  useEffect(() => {
-    const controller = new AbortController(); // Tạo controller để hủy yêu cầu bất đồng bộ khi component unmount
+      const videos = res.data.path; // ✅ Đúng định dạng từ backend
+      
+      console.log("videosList", res.data);
+      // likes = res.data.likes;
 
-    axios
-      .get("http://localhost:4000/api/requestVideo", {
-        signal: controller.signal, // Thêm signal để hủy yêu cầu bất đồng bộ nếu cần
-      })
-      .then((res) => {
-        const videoUrls = res.data.path.map((i) => i.path); // chuyển đổi kết quả là obj từ api trả về thành mảng đường dẫn video
-        setPath(videoUrls);
-      })
-      .catch((err) => {
-        if (!axios.isCancel(err)) console.error("Lỗi khi lấy video:", err);
+      
+      console.log("like", res.data.likes);
+      if (!Array.isArray(videos) || videos.length === 0) {
+        // nếu backend không trả về dữ liệu thì thôi không gọi api nữa
+        setHasMore(false);
+        return;
+      }
+
+      setPath((prev) => {
+        const newVideos = videos.filter(
+          (v) => !prev.some((p) => p.id_video === v.id_video) // ✅ tránh trùng video theo id_video
+        );
+        return [...prev, ...newVideos];
       });
 
-    return () => controller.abort(); // Hủy yêu cầu khi component unmount
-  }, []); // ← KHÔNG có path
+      setLastId(videos[videos.length - 1].id_video); // cập nhật id của video cuối để load thêm video
+    } catch (err) {
+      console.error("Lỗi khi lấy video:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  /* ============ II. SETUP OBSERVER KHI ĐÃ CÓ path ============ */ // NEW
+  useEffect(() => {
+    fetchVideos(); // Lần đầu load
+  }, []);
+
+  // Quan sát video để play/pause + auto load thêm
   useEffect(() => {
     if (path.length === 0) return;
 
@@ -38,46 +62,60 @@ function Video() {
           .filter((e) => e.isIntersecting) // isIntersecting là true nếu video đang hiển thị trong viewport
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio); // Sắp xếp theo tỷ lệ hiển thị (độ lớn của phần tử trong viewport)
         // Nếu có nhiều video hiển thị, chọn video có tỷ lệ hiển thị lớn nhất(có tác dụng trong trường hợp chuyển đổi giữa các video vì lúc đó đang có 2 video hiển thị )
-
-        videoRefs.current.forEach((el, idx) => {
-          // duyệt qua từng video để phát hoặc tạm dừng
-          // el là phần tử DOM của video, idx là chỉ số của video trong mảng path
-
-          if (!el) return; // Nếu không có el thì bỏ qua
+        Object.values(videoRefs.current).forEach((el) => {
+          if (!el) return;
           const videoTag = el.querySelector("video");
           if (!videoTag) return;
-
           const isVisible = visible.find(
-            (v) => Number(v.target.dataset.index) === idx // Kiểm tra xem video này có trong danh sách visible không
+            (v) => Number(v.target.dataset.index) === Number(el.dataset.index) // so sánh id_video
           );
-
           isVisible ? videoTag.play().catch(() => {}) : videoTag.pause();
+          // console.log("visible", isVisible);
         });
-
         if (visible.length > 0) {
-          const idx = Number(visible[0].target.dataset.index); // Lấy chỉ số của video đang hiển thị nhiều nhất
-          setCurrentIndex(idx);
+          const id = Number(visible[0].target.dataset.index); // Lấy id_video của video đang hiển thị nhiều nhất
+          setCurrentId(id);
+          console.log("id", currentId);
+          // ✅ Tự động load thêm video
+          const currentIndex = path.findIndex((v) => v.id_video === id);
+          if (currentIndex >= path.length - 2 && hasMore) {
+            fetchVideos();
+          }
         }
       },
-      { threshold: 0.6 } // có nghĩa là video sẽ được coi là hiển thị khi 60%(threshold: 0.6 ) diện tích của nó nằm trong viewport
+      { threshold: 0.6 }
     );
 
-    videoRefs.current.forEach((el) => el && observer.observe(el));
+    Object.values(videoRefs.current).forEach(
+      (el) => el && observer.observe(el)
+    );
     return () => observer.disconnect(); // Ngắt kết nối observer khi component unmount
-  }, [path]); // chạy đúng 1 lần sau khi đã có danh sách video
+  }, [path]);
 
-  /* ---------- Hàm cuộn ---------- */
-  const scrollToIndex = (idx) => {
-    const el = videoRefs.current[idx]; // Lấy phần tử video theo chỉ số idx
+  const scrollToIndex = (idVideo) => {
+    const el = videoRefs.current[idVideo]; // lấy ra thẻ video đang hiển thị
     if (el) {
       el.scrollIntoView({ behavior: "smooth" });
-      setCurrentIndex(idx);
+      setCurrentId(idVideo);
     }
   };
-  const handleScrollUp = () => scrollToIndex(currentIndex - 1);
-  const handleScrollDown = () => scrollToIndex(currentIndex + 1);
 
-  /* ---------- UI ---------- */
+  const handleScrollUp = () => {
+    const idx = path.findIndex((v) => v.id_video === currentId);
+    if (idx > 0) {
+      const prevId = path[idx - 1].id_video;
+      scrollToIndex(prevId);
+    }
+  };
+
+  const handleScrollDown = () => {
+    const idx = path.findIndex((v) => v.id_video === currentId);
+    if (idx < path.length - 1) {
+      const nextId = path[idx + 1].id_video;
+      scrollToIndex(nextId);
+    }
+  };
+
   return (
     <div
       ref={containerRef}
@@ -88,11 +126,13 @@ function Video() {
         scrollSnapType: "y mandatory",
       }}
     >
-      {path.map((src, index) => (
+      {path.map((src) => (
         <div
-          key={index}
-          data-index={index} // Dùng để xác định chỉ số của video trong mảng path
-          ref={(el) => (videoRefs.current[index] = el)} // Lưu phần tử DOM của video vào mảng videoRefs
+          key={src.id_video}
+          data-index={src.id_video} // biết id video đang hiển thị
+          ref={(el) => {
+            if (el) videoRefs.current[src.id_video] = el; // ✅ Dùng id_video làm key trong ref
+          }}
           style={{
             height: "100vh",
             width: "100vw",
@@ -103,7 +143,6 @@ function Video() {
             position: "relative",
           }}
         >
-          {/* Video + sidebar */}
           <div
             style={{
               display: "flex",
@@ -117,11 +156,8 @@ function Video() {
             }}
           >
             <video
-              onError={() => {
-                handleScrollDown();
-                // setCurrentIndex(currentIndex);
-              }} // Nếu video không thể tải được thì tự động cuộn xuống video tiếp theo
-              src={src}
+              onError={() => handleScrollDown()}
+              src={src.path}
               width="540"
               height="700"
               controls
@@ -139,13 +175,13 @@ function Video() {
                 alignItems: "center",
               }}
             >
-              <SidebarAction />
+              <SidebarAction dataLike={currentId} numberLike={src.likes} />
             </div>
           </div>
         </div>
       ))}
 
-      {/* === NÚT CUỘN GIỮ NGUYÊN === */}
+      {/* Nút cuộn cố định */}
       <div
         style={{
           position: "fixed",
@@ -159,14 +195,16 @@ function Video() {
       >
         <button
           onClick={handleScrollUp}
-          disabled={currentIndex === -1} // khi loại video đầu tiên thì không cho cuộn lên nữa
+          disabled={path.findIndex((v) => v.id_video === currentId) <= -1}
           style={btnStyle}
         >
           ⬆️
         </button>
         <button
           onClick={handleScrollDown}
-          disabled={currentIndex === path.length } // khi loai video cuối cùng thì không cho cuộn xuống nữa
+          disabled={
+            path.findIndex((v) => v.id_video === currentId) >= path.length
+          }
           style={btnStyle}
         >
           ⬇️

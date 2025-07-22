@@ -1,12 +1,15 @@
 const renderVideoDB = require('../models/renderVideoDB');
 
 async function videoPublic(req, res) {
-    const videoPath = await renderVideoDB.renderVideoDB();
+      const lastId = parseInt(req.query.lastId) || 0;
+
+    const videoPath = await renderVideoDB.renderVideoDB(lastId);
 
     return res.status(200).json({
         success: true,
         path: videoPath, // Trả về đường dẫn video có visibility là 'public'
         message: 'Danh sách video công khai',
+        id:videoPath.id_video
     })
 
 }

@@ -21,29 +21,45 @@ function UpLoadVideo() {
 
     return () => URL.revokeObjectURL(previewURL);
   }, [previewURL]);
-  
 
   const handleFileChange = (e) => {
     const f = e.target.files[0];
     if (!f) return;
     const preview = URL.createObjectURL(f);
-    // Kiểm tra xem file đã tồn tại trong arrFiles chưa
-    const isDuplicate = arrFiles.some(
-      (file) =>
-        file.name === f.name &&
-        file.size === f.size &&
-        file.lastModified === f.lastModified
-    );
-    if (isDuplicate) {
-      alert("Bạn phải thay đổi video mới thì mới được đăng!");
-      setMessage("none");
-      setPreviewURL(preview);
 
-      return;
-    }
-    setFile(f);
-    setPreviewURL(preview);
-    setMessage("block");
+    // Kiểm tra độ dài video
+    const video = document.createElement("video"); // tạo thẻ video để gán src để kiểm tra thuộc tính của video
+    video.preload = "metadata"; // chỉ tải những thông tin cần thiết của video
+    video.src = preview;
+
+    video.onloadedmetadata = () => {
+      window.URL.revokeObjectURL(preview); // Giải phóng bộ nhớ
+      const duration = video.duration; // Thời lượng (đơn vị: giây)
+
+      if (duration > 600) {
+        alert("Video quá dài! Chỉ chấp nhận video dưới 10 phút.");
+        setMessage("none");
+
+        return;// giúp dừng không chạy các dòng code phía dưới nữa
+      }
+      // Kiểm tra xem file đã tồn tại trong arrFiles chưa
+      const isDuplicate = arrFiles.some(
+        (file) =>
+          file.name === f.name &&
+          file.size === f.size &&
+          file.lastModified === f.lastModified
+      );
+      if (isDuplicate) {
+        alert("Bạn phải thay đổi video mới thì mới được đăng!");
+        setMessage("none");
+        setPreviewURL(preview);
+
+        return;
+      }
+      setFile(f);
+      setPreviewURL(preview);
+      setMessage("block");
+    };
   };
 
   const handleUpload = async () => {
@@ -54,7 +70,7 @@ function UpLoadVideo() {
 
     try {
       setLoading(true);
-      setSharedData(true)
+      setSharedData(true);
       await api.post("/upload", formData); // gọi đến API upload video từ api.js
       alert("Upload thành công!");
 
@@ -70,7 +86,7 @@ function UpLoadVideo() {
       alert("Upload thất bại");
     } finally {
       setLoading(false);
-      setSharedData(false)
+      setSharedData(false);
     }
   };
 

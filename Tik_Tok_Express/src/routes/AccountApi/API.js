@@ -9,6 +9,11 @@ const profileUser = require('../../controllers/profileController'); // chỉnh �
 const logoutController = require('../../controllers/logoutController'); // chỉnh đúng đường dẫn đến file logoutController.js
 const upLoadVideo = require('../../controllers/uploadVideoControler'); // chỉnh đúng đường dẫn đến file uploadVideoControler.js
 const videoPublicController = require('../../controllers/videoPublicController'); // chỉnh đúng đường dẫn đến file videoPublicController.js
+const updateLike = require('../../controllers/updateLikeController')
+
+
+
+
 router.post('/createUser', creatAccountController.creatAccountController)// Đường dẫn API để tạo tài khoản
 router.post('/login', userLogin.loginUserController); // Đường dẫn API để đăng nhập người dùng
 router.get("/refresh/profile", verifyRefreshToken, profileUser.profileController); // Đường dẫn API để lấy thông tin người dùng đã đăng nhập);
@@ -18,5 +23,6 @@ router.get('/requestVideo', videoPublicController.videoPublic); // Đường d�
 router.get('/refresh/token', verifyRefreshToken, (req, res) => {// Đường dẫn API để làm mới token
   res.json({ success: true, message: 'Token refreshed' });
 });
+router.post('/like', authMiddleware, updateLike)
 module.exports = router;
 
