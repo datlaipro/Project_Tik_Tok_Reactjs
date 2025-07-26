@@ -7,6 +7,7 @@ async function renderVideoDB(lastId) {
       SELECT 
         v.id_video, 
         v.path,
+         v.user_id,
         COALESCE(l.quantity, 0) AS likes,
         COALESCE(cc.quantity, 0) AS comments,
         COALESCE(b.quantity, 0) AS bookmarks

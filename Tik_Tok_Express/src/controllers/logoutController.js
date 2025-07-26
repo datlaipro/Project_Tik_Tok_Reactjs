@@ -7,7 +7,7 @@ async function logOutAccount(req, res) {
     const refreshToken = req.cookies.refreshToken;   // chuỗi JWT
     if (refreshToken) {
       const payload = jwt.verify(refreshToken, SECRET_KEY);// xác thực token xem có hợp lệ không
-        // Nếu token hợp lệ, xoá refresh token trong CSDL
+      // Nếu token hợp lệ, xoá refresh token trong CSDL
       // Thu hồi token trong DB
       await configDB.query(
         'UPDATE users SET refresh_token = NULL WHERE user_id = ?',
@@ -16,8 +16,8 @@ async function logOutAccount(req, res) {
     }
 
     // Xoá cookies (path phải khớp lúc set)
-    res.clearCookie('token'); // access‑token
-    res.clearCookie('refreshToken', { path: '/api/refresh' }); // hoặc '/refresh' tuỳ bạn đặt
+    res.clearCookie('token', { httpOnly: true, sameSite: 'lax', secure: false, path: '/' });
+    res.clearCookie('refreshToken', { httpOnly: true, sameSite: 'lax', secure: false, path: '/api/refresh' });
 
     return res.status(200).json({
       success: true,

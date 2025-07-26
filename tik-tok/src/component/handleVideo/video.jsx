@@ -1,8 +1,8 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useContext } from "react";
 import axios from "axios";
 import SidebarAction from "../home/sidebarAction";
-
-function Video() {
+import { MyContext } from "../../context/myContext";
+function Video({ sidebarData }) {
   const [path, setPath] = useState([]); // lưu danh sách video để hiển thị ra giao diện
   const [lastId, setLastId] = useState(0); // lưu vị trí video cuối để lần sau gọi api từ video tiếp theo trong db
   const [hasMore, setHasMore] = useState(true);
@@ -10,7 +10,22 @@ function Video() {
   const containerRef = useRef(null);
   const videoRefs = useRef({}); // ✅ Sửa thành object thay vì array
   const [currentId, setCurrentId] = useState(null); // ✅ Lưu id_video thay vì index
- 
+  const { showComments } = useContext(MyContext); // nhận use id từ component menuSiderbar
+  useEffect(() => {
+    if (containerRef.current) {
+      containerRef.current.style.overflowY = showComments ? "hidden" : "scroll";
+    }
+  }, [showComments]);
+
+  // ✅ Responsive: check nếu là màn hình nhỏ
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
   // ✅ Gọi API để lấy video
   const fetchVideos = async () => {
     if (isLoading) return; // Tránh gọi chồng nếu gọi api xong thì mới cho gọi tiếp
@@ -21,12 +36,7 @@ function Video() {
       );
 
       const videos = res.data.path; // ✅ Đúng định dạng từ backend
-      
-      console.log("videosList", res.data);
-      // likes = res.data.likes;
 
-      
-      console.log("like", res.data.likes);
       if (!Array.isArray(videos) || videos.length === 0) {
         // nếu backend không trả về dữ liệu thì thôi không gọi api nữa
         setHasMore(false);
@@ -75,7 +85,6 @@ function Video() {
         if (visible.length > 0) {
           const id = Number(visible[0].target.dataset.index); // Lấy id_video của video đang hiển thị nhiều nhất
           setCurrentId(id);
-          console.log("id", currentId);
           // ✅ Tự động load thêm video
           const currentIndex = path.findIndex((v) => v.id_video === id);
           if (currentIndex >= path.length - 2 && hasMore) {
@@ -115,7 +124,6 @@ function Video() {
       scrollToIndex(nextId);
     }
   };
-
   return (
     <div
       ref={containerRef}
@@ -126,66 +134,73 @@ function Video() {
         scrollSnapType: "y mandatory",
       }}
     >
-      {path.map((src) => (
-        <div
-          key={src.id_video}
-          data-index={src.id_video} // biết id video đang hiển thị
-          ref={(el) => {
-            if (el) videoRefs.current[src.id_video] = el; // ✅ Dùng id_video làm key trong ref
-          }}
-          style={{
-            height: "100vh",
-            width: "100vw",
-            scrollSnapAlign: "start",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            position: "relative",
-          }}
-        >
+      <div
+        style={{
+          width: showComments && !isMobile ? "calc(100vw - 350px)" : "100vw",
+          transition: "width 0.3s ease",
+          marginRight: showComments && !isMobile ? "auto" : "0",
+        }}
+      >
+        {path.map((src) => (
           <div
+            key={src.id_video}
+            data-index={src.id_video}
+            ref={(el) => {
+              if (el) videoRefs.current[src.id_video] = el;
+            }}
             style={{
+              height: "100vh",
+              width: "100vw",
+              scrollSnapAlign: "start",
               display: "flex",
-              flexDirection: "row",
+              justifyContent: showComments ? "flex-start" : "center",
               alignItems: "center",
-              justifyContent: "center",
-              width: "100%",
-              maxWidth: "720px",
-              padding: "0 20px",
-              boxSizing: "border-box",
+              position: "relative",
             }}
           >
-            <video
-              onError={() => handleScrollDown()}
-              src={src.path}
-              width="540"
-              height="700"
-              controls
-              style={{
-                borderRadius: "12px",
-                boxShadow: "0 4px 20px rgba(0, 0, 0, 0.2)",
-              }}
-            />
             <div
               style={{
-                marginLeft: 20,
                 display: "flex",
-                flexDirection: "column",
-                gap: 15,
+                flexDirection: isMobile ? "column" : "row", // ✅ Mobile thì xếp dọc
                 alignItems: "center",
+                justifyContent: "center",
+                minWidth: isMobile ? "100%" : 1300, // ✅ Co lại trên mobile
+                padding: isMobile ? "10px" : "0 20px",
+                boxSizing: "border-box",
+                gap: isMobile ? 10 : 20,
               }}
             >
-              <SidebarAction dataLike={currentId} numberLike={src.likes} />
+              <video
+                onError={handleScrollDown}
+                src={src.path}
+                width={isMobile ? "100%" : 540} // ✅ Tự động co giãn
+                height={isMobile ? "auto" : 700}
+                controls
+                style={{
+                  borderRadius: "12px",
+                  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.2)",
+                  maxWidth: isMobile ? "100%" : "none",
+                }}
+              />
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: isMobile ? 10 : 15,
+                  alignItems: "center",
+                }}
+              >
+                <SidebarAction dataLike={src.id_video} numberLike={src.likes} />
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
 
-      {/* Nút cuộn cố định */}
       <div
         style={{
           position: "fixed",
-          right: 20,
+          right: showComments && !isMobile ? 370 : 20,
           top: "45%",
           display: "flex",
           flexDirection: "column",
@@ -196,16 +211,24 @@ function Video() {
         <button
           onClick={handleScrollUp}
           disabled={path.findIndex((v) => v.id_video === currentId) <= -1}
-          style={btnStyle}
+          style={{
+            ...btnStyle,
+            padding: isMobile ? 8 : 10,
+            fontSize: isMobile ? 16 : 20,
+          }}
         >
           ⬆️
         </button>
         <button
           onClick={handleScrollDown}
           disabled={
-            path.findIndex((v) => v.id_video === currentId) >= path.length
+            path.findIndex((v) => v.id_video === currentId) >= path.length - 1
           }
-          style={btnStyle}
+          style={{
+            ...btnStyle,
+            padding: isMobile ? 8 : 10,
+            fontSize: isMobile ? 16 : 20,
+          }}
         >
           ⬇️
         </button>

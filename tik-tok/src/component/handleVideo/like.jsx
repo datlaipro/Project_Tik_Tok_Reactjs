@@ -3,21 +3,23 @@ import FavoriteIcon from "@mui/icons-material/Favorite";
 import { useEffect, useState } from "react";
 import api from "../../api/api";
 
-function Like({ idVideo,numberLike }) {
-  const [quantityLike, setQuantityLike] = useState(0);
+function Like({ idVideo, numberLike }) {
+  const [quantityLike, setQuantityLike] = useState(numberLike);
   const [color, setColor] = useState("none");
-
-  const dataLike = async (newQuantity) => {
+  var id = localStorage.getItem("id");
+  var userID = parseInt(id);
+  const dataLike = async () => {
     try {
       const res = await api.post("/like", {
-        quantityLike: newQuantity, // gửi giá trị mới tính lên sever
+        userID, // gửi giá trị mới tính lên sever
         idVideo,
       });
-      // console.log("Server response:", res.data);
+      console.log("Server response:", res.data);
     } catch (err) {
       console.error("Lỗi gửi like:", err);
     }
   };
+
   return (
     <div>
       <ActionPattern
@@ -30,10 +32,9 @@ function Like({ idVideo,numberLike }) {
             newColor === "red" ? quantityLike + 1 : quantityLike - 1;
 
           setQuantityLike(newQuantity);
-          
-          dataLike(newQuantity);
+          dataLike();
         }}
-        data={numberLike+quantityLike}
+        data={quantityLike}
       >
         <FavoriteIcon sx={{ fontSize: 30, color: color }} />
       </ActionPattern>

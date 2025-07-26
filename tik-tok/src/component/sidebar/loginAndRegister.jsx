@@ -12,6 +12,8 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import axios from "axios";
+import { MyContext } from "../../context/myContext";
+import { useContext } from "react";
 
 export default function LoginAndRegister({ onClose, onLoginSuccess }) {
   // component xử lý đăng nhập và đăng ký tài khoản
@@ -39,7 +41,7 @@ export default function LoginAndRegister({ onClose, onLoginSuccess }) {
       // Gọi API đăng nhập user ở đây
       const login = async () => {
         try {
-          await axios.post(
+          const res = await axios.post(
             "http://localhost:4000/api/login",
             {
               account: formData.username,
@@ -48,21 +50,28 @@ export default function LoginAndRegister({ onClose, onLoginSuccess }) {
             {
               withCredentials: true, // ✅ Đặt ở đây (object thứ 3) để gủi cookie kèm theo request và trình duyệt sẽ tự động lưu cookie này
             }
-          ).then((res) => {
-          });
-          // username();
+          );
+          const userData = {
+            userId: res.data.userId,
+          };
+          console.log(userData.userId)
+          onLoginSuccess?.(userData); // gọi nếu hàm tồn tại
+
+          //  Đây là chỗ  báo ra ngoài trạng thái đăng nhập
+          localStorage.setItem('id',userData.userId)// lưu id người dùng vào
+
           setColors("success"); // Đặt màu sắc cho Alert
           setOpenSnackbar(true); // 👈 Hiển thị thông báo sau khi đăng nhập thành công
           setErrorMessage("Đăng nhập tài khoản thành công! "); // hiển thị thông báo đăng nhập thành công
 
-          onLoginSuccess(); //  Đây là chỗ  báo ra ngoài trạng thái đăng nhập
           // ❗ Đóng modal sau 2.5 giây để có thời gian hiển thị Snackbar
           setTimeout(() => {
             setOpenSnackbar(false); // Đóng Snackbar
             onClose(); // Đóng modal sau khi đăng nhập thành công
           }, 2000);
         } catch (error) {
-          setErrorMessage(error.response.data.message); // hiển thị thông báo lỗi đăng nhập
+          // setErrorMessage(error.response.data.message); // hiển thị thông báo lỗi đăng nhập
+          console.log('error',error)
           setColors("warning"); // Đặt màu sắc cho Alert
           setOpenSnackbar(true);
         }

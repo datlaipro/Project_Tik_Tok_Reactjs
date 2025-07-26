@@ -23,6 +23,7 @@ import { useContext } from "react";
 import { MyContext } from "../../context/myContext";
 import { useState, useReducer, useEffect } from "react";
 import { Modal, Box } from "@mui/material"; // ✅ Modal & Box từ MUI
+import { useRef } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -30,6 +31,7 @@ import {
   Link,
   useNavigate,
 } from "react-router-dom";
+
 import axios from "axios"; // Thư viện axios để gửi request HTTP
 const stateColor = [
   "none",
@@ -54,19 +56,20 @@ const reducer = (state, action) => {
 
 function Sidebar() {
   const [data, setData] = useState(""); // trang thái lưu tên đăng nhập của người dùng
-  const { sharedData } = useContext(MyContext);
+  const { sharedData } = useContext(MyContext); // lưu giữ trạng thái upload video (đã upload/ chưa upload )
   const navigate = useNavigate(); // khởi tạo hook điều hướng
   const [state, dispatch] = useReducer(reducer, stateColor); // sử lí màu sắc của các nút sidebar
   const [login, setLogin] = useState(false); // sử lí trạng thái đăng nhập`]
   const [open, setOpen] = useState(false); // sử lí trạng thái mở modal đăng nhập/ đăng kí
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+
   const [loading, setLoading] = useState(true); // 👈 thêm state loading để tránh lỗi hiển thị trạng thái đăng nhập
   const [anchorEl, setAnchorEl] = useState(null); // trang thái để lưu vị trí click của nút đăng nhập/ đăng kí
-  const [stateUpload, setStateUpload] = useState(false);
+  // const [stateUpload, setStateUpload] = useState(false);
   const opens = Boolean(anchorEl);
 
-  // Khi app khởi động, kiểm tra trạng thái đăng nhập
+  // Khi load lại trang, kiểm tra trạng thái đăng nhập
   useEffect(() => {
     axios
       .get("http://localhost:4000/api/refresh/profile", {
@@ -75,6 +78,8 @@ function Sidebar() {
       .then((res) => {
         // console.log("✅ Đã đăng nhập, user:", res.data.user.account);
         setData(res.data.user.account); // trả về tên đăng nhập của người dùng
+        // name.current = res.data.user.account;
+        // setUseID(res.data.user.user_id)// gửi id user cho component like
 
         setLogin(true);
         setLoading(false); // ✅ dừng loading sau khi có phản hồi
@@ -125,10 +130,10 @@ function Sidebar() {
           // verifyLogin(); // kiểm tra đăng nhập
           login ? navigate("/upload") : handleOpen(); // nếu đã đăng nhập thì chuyển đến trang upload, nếu chưa thì mở modal đăng nhập
           if (sharedData) {
-            alert("chưa upload xong video ")
-            navigate("/video")
-          }else{
-            navigate("/upload")
+            alert("chưa upload xong video ");
+            navigate("/video");
+          } else {
+            navigate("/upload");
           }
         }}
         isActive={state[3] === "red"}
@@ -188,6 +193,8 @@ function Sidebar() {
                 onClose={handleClose}
                 onLoginSuccess={() => {
                   setLogin(true);
+
+                  // userID(userData.userId);
                 }}
               />
             </Box>
@@ -223,6 +230,8 @@ function Sidebar() {
               withCredentials: true, // gửi cookie để xác thực đăng xuất
             }
           );
+          localStorage.clear();// khi đăng xuất thì xóa id người dùng 
+
           setLogin(false); // Đặt lại trạng thái đăng nhập
           setAnchorEl(null); // Đóng menu đăng xuất
           navigate("/video"); // Chuyển hướng về trang video sau khi đăng xuất

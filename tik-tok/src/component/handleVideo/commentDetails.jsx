@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useContext } from "react";
+import { MyContext } from "../../context/myContext";
 
 const initialComments = [
   {
@@ -18,43 +19,26 @@ const initialComments = [
     avatar: "https://i.pravatar.cc/40?img=3",
     name: "Thúy nhung94",
     content: "tội nghiệp cô dâu chú rể, thấy vậy chứ rầu thùi ruột đó",
-  },{
-    id: 3,
-    avatar: "https://i.pravatar.cc/40?img=3",
-    name: "Thúy nhung94",
-    content: "tội nghiệp cô dâu chú rể, thấy vậy chứ rầu thùi ruột đó",
-  },{
-    id: 3,
-    avatar: "https://i.pravatar.cc/40?img=3",
-    name: "Thúy nhung94",
-    content: "tội nghiệp cô dâu chú rể, thấy vậy chứ rầu thùi ruột đó",
-  },{
-    id: 3,
-    avatar: "https://i.pravatar.cc/40?img=3",
-    name: "Thúy nhung94",
-    content: "tội nghiệp cô dâu chú rể, thấy vậy chứ rầu thùi ruột đó",
-  },{
-    id: 3,
-    avatar: "https://i.pravatar.cc/40?img=3",
-    name: "Thúy nhung94",
-    content: "tội nghiệp cô dâu chú rể, thấy vậy chứ rầu thùi ruột đó",
-  },{
-    id: 3,
-    avatar: "https://i.pravatar.cc/40?img=3",
-    name: "Thúy nhung94",
-    content: "tội nghiệp cô dâu chú rể, thấy vậy chứ rầu thùi ruột đó",
   },
 ];
 
-export default function SimpleComments() {
+export default function SimpleComments({close}) {
   const [comments, setComments] = useState(initialComments);
   const [newComment, setNewComment] = useState("");
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const { setShowComments } = useContext(MyContext);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const handleAddComment = () => {
     if (newComment.trim() === "") return;
     const newCmt = {
       id: Date.now(),
-      avatar: "https://i.pravatar.cc/40?img=5", // giả avatar người dùng
+      avatar: "https://i.pravatar.cc/40?img=5",
       name: "Bạn",
       content: newComment.trim(),
     };
@@ -64,21 +48,61 @@ export default function SimpleComments() {
 
   return (
     <div
-      style={{ width: 250, fontFamily: "Arial, sans-serif", marginRight: -280 }}
+      style={{
+        position: "fixed",
+        top: isMobile ? "auto" : 0,
+        bottom: isMobile ? 0 : "auto",
+        right: 0,
+        width: isMobile ? "100%" : 350,
+        height: isMobile ? "80vh" : "100vh", // ✅ chiều cao rõ ràng
+        background: "#fff",
+        boxShadow: isMobile
+          ? "0 -2px 8px rgba(0,0,0,0.15)"
+          : "-2px 0 8px rgba(0,0,0,0.2)",
+        zIndex: 9999,
+        borderTopLeftRadius: isMobile ? 12 : 0,
+        borderTopRightRadius: isMobile ? 12 : 0,
+        transition: "all 0.3s ease-in-out",
+        display: "flex", // ✅ Flex layout
+        flexDirection: "column",
+      }}
     >
-      <h3>Bình luận ({comments.length})</h3>
+      {/* Header */}
+
+      <h3
+        style={{
+          padding: 8,
+          borderBottom: "1px solid #eee",
+          margin: 0,
+          fontSize: 16,
+        }}
+      >
+        Bình luận ({comments.length})
+        <span style={{ float: "right" }}>
+          <button
+            onClick={() => {
+              close()
+              setShowComments(false); // giúp khung video trở lại vị trí ban đầu 
+            }}
+          >
+            x
+          </button>
+        </span>
+      </h3>
+
+      {/* Danh sách bình luận */}
       <div
         style={{
-          maxHeight: 400,
-          overflowY: "auto",
-          border: "1px solid #eee",
-          borderRadius: 8,
+          flexGrow: 1,
+          overflowY: "scroll",
           padding: 8,
+          overscrollBehavior: "contain", // ✅ Ngăn scroll lan sang video
+          WebkitOverflowScrolling: "touch", // ✅ Mượt mà trên iOS
         }}
       >
         {comments.map(({ id, avatar, name, content }) => (
           <div
-            key={id}
+            key={id + content}
             style={{
               display: "flex",
               gap: 8,
@@ -100,20 +124,32 @@ export default function SimpleComments() {
         ))}
       </div>
 
-      <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
+      {/* Input thêm bình luận */}
+      <div
+        style={{
+          padding: 8,
+          borderTop: "1px solid #ddd",
+          display: "flex",
+          gap: 8,
+          background: "#fff",
+          overscrollBehavior: "contain", // ✅ Ngăn chảy cuộn ra ngoài
+          touchAction: "pan-y", // ✅ Hỗ trợ cuộn dọc trên mobile
+          WebkitOverflowScrolling: "touch", // ✅ iOS mượt
+        }}
+      >
         <input
           type="text"
           placeholder="Thêm bình luận..."
           value={newComment}
           onChange={(e) => setNewComment(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleAddComment();
+          }}
           style={{
             flexGrow: 1,
             padding: 8,
             borderRadius: 4,
             border: "1px solid #ccc",
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") handleAddComment();
           }}
         />
         <button

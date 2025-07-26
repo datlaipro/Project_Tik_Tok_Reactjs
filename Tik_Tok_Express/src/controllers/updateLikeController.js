@@ -1,9 +1,9 @@
 const updateLike = require('../models/updateLikeDB')
 
 async function updateLikeController(req, res) {
-    const { quantityLike, idVideo } = req.body
+    const { userID, idVideo } = req.body
     try {
-        const result = await updateLike.updateLikeDB(idVideo, quantityLike)
+        const result = await updateLike.toggleLike(userID, idVideo)
         if(result.success===true){
             return res.status(200).json({success:true,message:"cập nhật like thành công"})
         }

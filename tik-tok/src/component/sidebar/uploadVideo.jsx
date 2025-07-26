@@ -6,7 +6,7 @@ import { useContext } from "react";
 
 import { MyContext } from "../../context/myContext";
 function UpLoadVideo() {
-  const { setSharedData } = useContext(MyContext);
+  const { setSharedData } = useContext(MyContext);// trạng thái thông báo upload video 
   const [file, setFile] = useState(null);
   const [previewURL, setPreviewURL] = useState(""); // quản lý URL tạm thời để xem trước video
   const [visibility, setVisibility] = useState("public");
@@ -70,7 +70,7 @@ function UpLoadVideo() {
 
     try {
       setLoading(true);
-      setSharedData(true);
+      setSharedData(true); // nếu chưa upload xong thì không cho upload tiếp 
       await api.post("/upload", formData); // gọi đến API upload video từ api.js
       alert("Upload thành công!");
 
@@ -86,7 +86,7 @@ function UpLoadVideo() {
       alert("Upload thất bại");
     } finally {
       setLoading(false);
-      setSharedData(false);
+      setSharedData(false);// nếu upload xong rồi thì mới cho upload tiếp
     }
   };
 

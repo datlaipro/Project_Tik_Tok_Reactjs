@@ -23,7 +23,7 @@ async function loginUserController(req, res) {
             return res.status(200).json({
                 success: true,
                 message: 'Đăng nhập thành công',
-                // userId: result.userId,
+                userId: result.userId,
                 name: account, // Trả về tên tài khoản đã đăng nhập
                 // token: result.token, // Trả về token JWT
             });

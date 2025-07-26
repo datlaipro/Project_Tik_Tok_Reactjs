@@ -7,12 +7,22 @@ import { Routes, Route } from 'react-router-dom';
 import Profile from './component/sidebar/profile';
 import { useState } from 'react';
 import { MyContext } from './context/myContext';
+import { useRef } from 'react';
+
 import SidebarAction from './component/home/sidebarAction';
 function App() {
- 
-  const [sharedData, setSharedData] = useState(false);
+  
+  // const handleSidebarData = (data) => {
+
+
+  //   videoDataRef.current = data;        // ✅ gán ngay lập tức
+  //   setRenderVideo((prev) => !prev);    // ✅ ép render lại Route
+  // };
+
+  const [sharedData, setSharedData] = useState(false);// quản lí trạng thái upload video (đã upload/chưa upload)
+  const [showComments,setShowComments]=useState(false)
   return (
-    <MyContext.Provider value={{ sharedData, setSharedData }}>
+    <MyContext.Provider value={{ sharedData, setSharedData,showComments,setShowComments }}>
       <div className="App">
         <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
           {/* Sidebar trái */}
