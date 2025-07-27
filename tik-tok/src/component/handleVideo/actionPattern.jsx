@@ -1,37 +1,21 @@
 import React from "react";
+import { useState, useEffect } from "react";
 
-// function ActionPattern({ children,parent,data }) {
-//   // khuôn mẫu hành động hình tròn (like, comment, share)
-//   return (
-//     <div>
-//     <button
-//       style={{
-//         position: "relative",
-//         width: "50px",
-//         height: "50px",
-//         backgroundColor: "#e0e0e0", // xám nhẹ
-//         borderRadius: "50%",
-//         display: "flex",
-//         alignItems: "center",
-//         justifyContent: "center",
-//         border: "none", // loại bỏ viền mặc định
-//         padding: 0, // loại bỏ khoảng cách mặc định
-//         cursor: "pointer", // hiển thị con trỏ tay
-//         outline: "none", // loại bỏ viền focus mặc định
-//       }}
-//       onClick={parent}
-//     >
-//       {children}
-      
-//     </button>
-//      <span style={{ marginTop: "4px", fontWeight: "bold", fontSize: "14px", color: "#333" }}>
-//         {data}
-//       </span>
-//     </div>
-//   );
-// }
-// export default ActionPattern;
 function ActionPattern({ children, parent, data }) {
+  const [isMobile, setIsMobile] = useState(false); //responsive
+  const [isTablet, setIsTablet] = useState(false);
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+
+      setIsMobile(width <= 768);
+      setIsTablet(width > 768 && width <= 1024);
+    };
+
+    handleResize(); // khởi tạo lần đầu
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
   return (
     <div>
       <button
@@ -55,7 +39,14 @@ function ActionPattern({ children, parent, data }) {
         {React.Children.toArray(children)[0]}
       </button>
 
-      <span style={{ marginTop: "4px", fontWeight: "bold", fontSize: "14px", color: "#333" }}>
+      <span
+        style={{
+          marginTop: "4px",
+          fontWeight: "bold",
+          fontSize: "14px",
+          color: isMobile || isTablet ? "white" : "black",
+        }}
+      >
         {data}
       </span>
 

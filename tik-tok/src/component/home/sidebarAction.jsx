@@ -7,24 +7,22 @@ import Video from "../handleVideo/video";
 import { useContext, useState, useEffect } from "react";
 import BackgroundMusic from "../handleVideo/backgroundMusic";
 import { MyContext } from "../../context/myContext";
-function SidebarAction({ dataLike, numberLike }) {
-  const { showComments } = useContext(MyContext);
-
-  // ✅ Responsive
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 768);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+function SidebarAction({
+  dataLike,
+  numberLike,
+  isTablet,
+  isMobile,
+  isDesktop,
+}) {
   return (
     <div>
       <section
         style={{
-          position: "absolute",
-          bottom: isMobile ? "10px" : "20px", // ✅ thấp hơn trên mobile
-          right: isMobile?"20":"420",
-
+          position: isDesktop ? "static" : "absolute",
+          // tách biệt độc lập so với thẻ cha
+          bottom: isMobile || isTablet ? "80px" : "20px", // ✅ thấp hơn trên mobile
+          right: isMobile ? "20px" : isTablet ? "80px" : "420px", // ✅ Sát phải trên mobile, giữ nguyên desktop
+          marginTop:  "300px" ,// 👈 đẩy xuống cuối cột
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -39,7 +37,7 @@ function SidebarAction({ dataLike, numberLike }) {
         <Comment />
         <Share />
         <Bookmark />
-        <BackgroundMusic />
+        {/* <BackgroundMusic /> */}
       </section>
     </div>
   );

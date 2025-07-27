@@ -22,14 +22,23 @@ const initialComments = [
   },
 ];
 
-export default function SimpleComments({close}) {
+export default function SimpleComments({ close }) {
   const [comments, setComments] = useState(initialComments);
   const [newComment, setNewComment] = useState("");
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const { setShowComments } = useContext(MyContext);
+  const [isTablet, setIsTablet] = useState(
+    window.innerWidth > 768 && window.innerWidth <= 1024
+  );
 
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    const handleResize = () => {
+      const width = window.innerWidth;
+      setIsMobile(width <= 768);
+      setIsTablet(width > 768 && width <= 1024);
+    };
+
+    handleResize(); // Gọi khi lần đầu
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
@@ -50,11 +59,11 @@ export default function SimpleComments({close}) {
     <div
       style={{
         position: "fixed",
-        top: isMobile ? "auto" : 0,
-        bottom: isMobile ? 0 : "auto",
+        top: isMobile || isTablet ? "auto" : 0,// đảm bảo khung bình luận ở dưới màn hình
+        bottom: isMobile || isTablet ? 0 : "auto",
         right: 0,
-        width: isMobile ? "100%" : 350,
-        height: isMobile ? "80vh" : "100vh", // ✅ chiều cao rõ ràng
+        width: isMobile || isTablet ? "100%" : 350,// nếu khung bình luận ở dưới màn hình thì chiếm toàn bộ chiều ngang màn hình
+        height: isMobile || isTablet ? "40vh" : "100vh", // ✅ chiều cao khi ở trên mobile
         background: "#fff",
         boxShadow: isMobile
           ? "0 -2px 8px rgba(0,0,0,0.15)"
@@ -81,8 +90,8 @@ export default function SimpleComments({close}) {
         <span style={{ float: "right" }}>
           <button
             onClick={() => {
-              close()
-              setShowComments(false); // giúp khung video trở lại vị trí ban đầu 
+              close();
+              setShowComments(false); // giúp khung video trở lại vị trí ban đầu
             }}
           >
             x

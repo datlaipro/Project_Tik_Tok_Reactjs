@@ -20,13 +20,11 @@ function Comment() {
   const { setShowComments } = useContext(MyContext);
 
   const [display, setDisplay] = useState(false);
-  console.log("✅ display = ", display); // ← đặt ở đây
 
   const close = () => {
     setDisplay(false); //đóng
     //  hộp comment
     setShowComments(false);
-    console.log("✅ Gọi close từ SimpleComments");
   };
   return (
     <div>
