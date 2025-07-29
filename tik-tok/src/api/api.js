@@ -33,7 +33,7 @@ api.interceptors.response.use(// chặn phản hồi từ server
 
       isRefreshing = true;// đánh dấu req đang lỗi và cần làm mới token
       try {
-        await api.get("/refresh/token");// gửi request để làm mới token
+        await api.get("/refresh/token");// gửi request refreshtoken để làm mới token
 
         // Nếu body ban đầu là FormData, cần clone lại vì FormData đã bị read‑only sau lần gửi đầu
         if (original.data instanceof FormData) {// kiểm tra xem body có phải là FormData không

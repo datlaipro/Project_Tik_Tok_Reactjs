@@ -7,7 +7,7 @@ async function videoPublic(req, res) {
 
     return res.status(200).json({
         success: true,
-        path: videoPath, // Trả về đường dẫn video có visibility là 'public'
+        path: videoPath, // Trả về danh sách đường dẫn video có visibility là 'public'
         message: 'Danh sách video công khai',
         id:videoPath.id_video
     })

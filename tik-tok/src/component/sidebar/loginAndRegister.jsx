@@ -53,12 +53,15 @@ export default function LoginAndRegister({ onClose, onLoginSuccess }) {
           );
           const userData = {
             userId: res.data.userId,
+            name: res.data.name,
           };
-          console.log(userData.userId)
           onLoginSuccess?.(userData); // gọi nếu hàm tồn tại
+          window.location.reload();// sau khi login thành công thì reload lại trang để cập nhật tên đăng nhập 
+
 
           //  Đây là chỗ  báo ra ngoài trạng thái đăng nhập
-          localStorage.setItem('id',userData.userId)// lưu id người dùng vào
+          localStorage.setItem("id", userData.userId); // lưu id và tên người dùng vào localStorage
+          localStorage.setItem("username", userData.name);
 
           setColors("success"); // Đặt màu sắc cho Alert
           setOpenSnackbar(true); // 👈 Hiển thị thông báo sau khi đăng nhập thành công
@@ -71,7 +74,7 @@ export default function LoginAndRegister({ onClose, onLoginSuccess }) {
           }, 2000);
         } catch (error) {
           // setErrorMessage(error.response.data.message); // hiển thị thông báo lỗi đăng nhập
-          console.log('error',error)
+          console.log("error", error);
           setColors("warning"); // Đặt màu sắc cho Alert
           setOpenSnackbar(true);
         }
@@ -122,7 +125,14 @@ export default function LoginAndRegister({ onClose, onLoginSuccess }) {
         <IconButton
           onClick={onClose}
           size="small"
-          sx={{ position: "absolute", top: 8, right: 8 }}
+          sx={{
+            position: "absolute",
+            top: 8,
+            right: 8,
+            zIndex: 10,
+            touchAction: "manipulation", // ✅ Tránh sự cố tap bị vô hiệu hóa
+            backgroundColor: "#ff000033", // test tạm
+          }}
         >
           <CloseIcon />
         </IconButton>

@@ -1,29 +1,19 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, {
+  useState,
+  useEffect,
+  useContext,
+  useRef,
+  useCallback,
+} from "react";
 import { MyContext } from "../../context/myContext";
+import api from "../../api/api";
 
-const initialComments = [
-  {
-    id: 1,
-    avatar: "https://i.pravatar.cc/40?img=1",
-    name: "Lúc Lắc",
-    content: "đây là đám cưới của con bạn t với nyc",
-  },
-  {
-    id: 2,
-    avatar: "https://i.pravatar.cc/40?img=2",
-    name: "Hữu Hào",
-    content: "Mời ông thần gió tới ăn đám cưới 🥳",
-  },
-  {
-    id: 3,
-    avatar: "https://i.pravatar.cc/40?img=3",
-    name: "Thúy nhung94",
-    content: "tội nghiệp cô dâu chú rể, thấy vậy chứ rầu thùi ruột đó",
-  },
-];
 
-export default function SimpleComments({ close }) {
-  const [comments, setComments] = useState(initialComments);
+
+export default function SimpleComments({ close, idVideo }) {
+  const lastCommentIdRef = useRef(null); // ✅ lưu id bình luận cuối
+
+  const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const { setShowComments } = useContext(MyContext);
@@ -43,26 +33,86 @@ export default function SimpleComments({ close }) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const handleAddComment = () => {
+  var id = localStorage.getItem("id");
+  var userID = parseInt(id);
+  var account = localStorage.getItem("username");
+  var username = account;
+  const handleAddComment = async () => {
     if (newComment.trim() === "") return;
-    const newCmt = {
-      id: Date.now(),
-      avatar: "https://i.pravatar.cc/40?img=5",
-      name: "Bạn",
-      content: newComment.trim(),
-    };
-    setComments([newCmt, ...comments]);
-    setNewComment("");
+
+    try {
+      const res = await api.post("/postcomment", {
+        userID,
+        idVideo,
+        comments: newComment.trim(),
+      });
+
+      // const serverComment = res.data.comment // server trả về 1 comment dạng mảng
+
+      const newCmt = {
+        // id: serverComment.id,
+        avatar: "https://i.pravatar.cc/40?img=5", // hoặc từ server
+        name: username,
+        content: newComment.trim(),
+      };
+
+      setComments((prev) => [newCmt, ...prev]);
+      setNewComment("");
+    } catch (err) {
+      console.error("❌ Lỗi khi gửi comment:", err);
+    }
   };
+
+  const fetchComments = async () => {
+    try {
+      const res = await api.get(
+        `/getcomments?idVideo=${idVideo}&lastId=${
+          lastCommentIdRef.current || 0
+        }`
+      );
+      const newComments = res.data.comments;
+     console.log('comment',res)
+
+      if (newComments.length > 0) {
+        // ✅ Cập nhật lastCommentIdRef với id cuối cùng trong danh sách mới
+        lastCommentIdRef.current = newComments[newComments.length - 1].id;
+
+        // ✅ Nối thêm bình luận mới vào mảng cũ, không ghi đè
+        setComments((prev) => [...prev, ...newComments]);
+      console.log(comments)
+      }
+    } catch (err) {
+      console.error("❌ Lỗi khi tải thêm comment:", err);
+    }
+  };
+  useEffect(() => {
+    fetchComments();
+  }, [idVideo]);
+
+  const observer = useRef();
+
+  const lastCommentRef = useCallback((node) => {
+    if (observer.current) observer.current.disconnect();
+
+    observer.current = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        fetchComments(); // ✅ gọi load thêm
+      }
+    });
+
+    if (node) observer.current.observe(node);
+  }, []);
+
+  useEffect(() => {}, [comments]);
 
   return (
     <div
       style={{
         position: "fixed",
-        top: isMobile || isTablet ? "auto" : 0,// đảm bảo khung bình luận ở dưới màn hình
+        top: isMobile || isTablet ? "auto" : 0, // đảm bảo khung bình luận ở dưới màn hình
         bottom: isMobile || isTablet ? 0 : "auto",
         right: 0,
-        width: isMobile || isTablet ? "100%" : 350,// nếu khung bình luận ở dưới màn hình thì chiếm toàn bộ chiều ngang màn hình
+        width: isMobile || isTablet ? "100%" : 350, // nếu khung bình luận ở dưới màn hình thì chiếm toàn bộ chiều ngang màn hình
         height: isMobile || isTablet ? "40vh" : "100vh", // ✅ chiều cao khi ở trên mobile
         background: "#fff",
         boxShadow: isMobile
@@ -109,28 +159,32 @@ export default function SimpleComments({ close }) {
           WebkitOverflowScrolling: "touch", // ✅ Mượt mà trên iOS
         }}
       >
-        {comments.map(({ id, avatar, name, content }) => (
-          <div
-            key={id + content}
-            style={{
-              display: "flex",
-              gap: 8,
-              padding: "8px 0",
-              borderBottom: "1px solid #ddd",
-              alignItems: "center",
-            }}
-          >
-            <img
-              src={avatar}
-              alt={name}
-              style={{ width: 40, height: 40, borderRadius: "50%" }}
-            />
-            <div>
-              <strong>{name}</strong>
-              <p style={{ margin: "4px 0" }}>{content}</p>
+        {comments.map(({ id, avatar, account, content }, index) => {
+          const isLast = index === comments.length - 1;
+          return (
+            <div
+              key={id + content}
+              ref={isLast ? lastCommentRef : null}
+              style={{
+                display: "flex",
+                gap: 8,
+                padding: "8px 0",
+                borderBottom: "1px solid #ddd",
+                alignItems: "center",
+              }}
+            >
+              <img
+                src={"https://i.pravatar.cc/300?img=6"}
+                alt={''}
+                style={{ width: 40, height: 40, borderRadius: "50%" }}
+              />
+              <div>
+                <strong>{account}</strong>
+                <p style={{ margin: "4px 0" }}>{content}</p>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Input thêm bình luận */}

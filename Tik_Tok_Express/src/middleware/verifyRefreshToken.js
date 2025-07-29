@@ -11,7 +11,7 @@ async function refreshToken(req, res, next) {
     }
 
     try {
-        const payload = jwt.verify(rawRefreshToken, SECRET_KEY);// giải mã token và so sánh với SECRET_KEY
+        const payload = jwt.verify(rawRefreshToken, SECRET_KEY);// giải mã refreshtoken và so sánh với SECRET_KEY
 
         const [rows] = await configDB.query(
             'SELECT refresh_token FROM users WHERE user_id = ?',

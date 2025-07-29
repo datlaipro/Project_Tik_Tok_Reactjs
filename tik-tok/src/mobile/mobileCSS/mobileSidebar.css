@@ -1,0 +1,52 @@
+
+/* Thanh chứa toàn bộ các nút Home */
+.mobile-sidebar-wrapper {
+  position: fixed;               /* Luôn hiện ở cuối màn hình */
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  background-color: white;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 1000;
+  border-top: 1px solid #ddd;
+  box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.05);
+}
+
+/* Component Home: bọc ngoài */
+.home-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+  color: #666;
+  font-size: 12px;
+  background: none;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 5px 10px;
+  transition: color 0.2s;
+}
+
+/* Icon đang được active */
+.home-button.active {
+  color: red;
+}
+
+/* Hover effect */
+.home-button:hover {
+  color: black;
+}
+
+/* Tùy chọn: ẩn văn bản nếu chỉ muốn hiển thị icon */
+.home-button span {
+  margin-top: 2px;
+}
+@media (min-width: 1025px) {/*ẩn thanh siderbar trên destop*/
+  .mobile-sidebar-wrapper {
+    display: none;
+  }
+}

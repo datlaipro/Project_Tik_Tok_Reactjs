@@ -7,9 +7,8 @@ import { Routes, Route } from 'react-router-dom';
 import Profile from './component/sidebar/profile';
 import { useState, useEffect } from 'react';
 import { MyContext } from './context/myContext';
-import { useRef } from 'react';
-
-import SidebarAction from './component/home/sidebarAction';
+import RequireLogin from './component/auth/RequireLogin';
+import MobileSiderbar from './mobile/siderbarMobile';
 function App() {
 
   const [isMobile, setIsMobile] = useState(false);
@@ -39,13 +38,21 @@ function App() {
       <div className="App">
         {isMobile ? (
           // 📱 Giao diện Mobile
-          <Routes>
-            <Route path="/upload" element={<UpLoadVideo />} />
-            <Route path="/" element={<Video />} />
-            <Route path="/video" element={<Video />} />
-            <Route path="/discover" element={<Discover />} />
-            <Route path="/profile" element={<Profile />} />
-          </Routes>
+          <>
+            <MobileSiderbar />
+            <Routes>
+
+              <Route path="/upload" element={<RequireLogin>{/* Chặn /upload nếu chưa đăng nhập */}
+                <UpLoadVideo />
+              </RequireLogin>} />
+              <Route path="/" element={<Video />} />
+              <Route path="/video" element={<Video />} />
+              <Route path="/discover" element={<Discover />} />
+              <Route path="/profile" element={<RequireLogin>{/* Chặn /xem profile nếu chưa đăng nhập */}
+                <Profile />
+              </RequireLogin>} />
+            </Routes>
+          </>
         ) : isTablet ? (
           // 📱 Giao diện Tablet (nếu bạn muốn xử lý khác mobile/desktop)
           <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
@@ -58,36 +65,46 @@ function App() {
             </div>
             <div style={{ flex: 1, overflowY: "scroll", position: "relative" }}>
               <Routes>
-                <Route path="/upload" element={<UpLoadVideo />} />
+                <Route path="/upload" element={<RequireLogin>{/* Chặn /upload nếu chưa đăng nhập */}
+                  <UpLoadVideo />
+                </RequireLogin>} />
                 <Route path="/" element={<Video />} />
                 <Route path="/video" element={<Video />} />
                 <Route path="/discover" element={<Discover />} />
-                <Route path="/profile" element={<Profile />} />
+                <Route path="/profile" element={<RequireLogin>{/* Chặn /xem profile nếu chưa đăng nhập */}
+                  <Profile />
+                </RequireLogin>} />
               </Routes>
             </div>
           </div>
-        ) :isDesktop? (
+        ) : isDesktop ? (
           // 🖥 Giao diện Desktop
           <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
-            <div style={{ width: "80px", flexShrink: 0, zIndex: 2 ,
-             
+            <div style={{
+              width: "80px", flexShrink: 0, zIndex: 2,
+
             }}>
               <Sidebar />
             </div>
             <div style={{ flex: 1, overflowY: "scroll", position: "relative" }}>
               <Routes>
-                <Route path="/upload" element={<UpLoadVideo />} />
+                <Route path="/upload" element={<RequireLogin>{/* Chặn /upload nếu chưa đăng nhập */}
+                  <UpLoadVideo />
+                </RequireLogin>} />
                 <Route path="/" element={<Video />} />
                 <Route path="/video" element={<Video />} />
                 <Route path="/discover" element={<Discover />} />
-                <Route path="/profile" element={<Profile />} />
+                <Route path="/profile" element={<RequireLogin>{/* Chặn /xem profile nếu chưa đăng nhập */}
+                  <Profile />
+                </RequireLogin>} />
               </Routes>
             </div>
           </div>
-        ):(
+        ) : (
           // 🖥 Giao diện Desktop
           <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
-            <div style={{ width: "80px", flexShrink: 0, zIndex: 2 ,
+            <div style={{
+              width: "80px", flexShrink: 0, zIndex: 2,
               // marginTop: "200px", // ✅ Đẩy Sidebar xuống 50px trên tablet
               // transition: "margin-top 0.3s ease", // ✅ Mượt hơn khi resize
             }}>
@@ -95,17 +112,21 @@ function App() {
             </div>
             <div style={{ flex: 1, overflowY: "scroll", position: "relative" }}>
               <Routes>
-                <Route path="/upload" element={<UpLoadVideo />} />
+                <Route path="/upload" element={<RequireLogin>
+                  <UpLoadVideo />
+                </RequireLogin>} />
                 <Route path="/" element={<Video />} />
                 <Route path="/video" element={<Video />} />
                 <Route path="/discover" element={<Discover />} />
-                <Route path="/profile" element={<Profile />} />
+                <Route path="/profile" element={<RequireLogin>{/* Chặn /xem profile nếu chưa đăng nhập */}
+                  <Profile />
+                </RequireLogin>} />
               </Routes>
             </div>
           </div>
         )}
       </div>
-    </MyContext.Provider>
+    </MyContext.Provider >
   );
 
 }

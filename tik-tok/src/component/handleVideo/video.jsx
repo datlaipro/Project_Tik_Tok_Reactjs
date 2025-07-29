@@ -51,7 +51,7 @@ function Video() {
       const width = window.innerWidth;
       setIsMobile(width <= 768);
       setIsTablet(width > 768 && width <= 1024);
-      setIsDesktop(width > 1300);
+      setIsDesktop(width > 1300); 
     };
 
     handleResize(); // Gọi khi lần đầu
@@ -69,6 +69,7 @@ function Video() {
       );
 
       const videos = res.data.path; // ✅ Đúng định dạng từ backend
+      // console.log(videos)
 
       if (!Array.isArray(videos) || videos.length === 0) {
         // nếu backend không trả về dữ liệu thì thôi không gọi api nữa
@@ -239,10 +240,13 @@ function Video() {
                 <SidebarAction
                   dataLike={src.id_video}
                   numberLike={src.likes}
+                  
                   isTablet={isTablet}
                   isMobile={isMobile}
                   isDesktop={isDesktop}
                   showComments={showComments} // 👈 thêm dòng này
+                  numberComment={src.comments}// gửi số lượng comment của video tương ứng 
+                  
                 />
               </div>
             </div>

@@ -1,6 +1,5 @@
 import Search from "./search";
 import Home from "./home";
-import styles from "./styleAlike.module.css";
 import HomeIcon from "@mui/icons-material/Home";
 import ExploreIcon from "@mui/icons-material/Explore";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
@@ -10,14 +9,7 @@ import TelegramIcon from "@mui/icons-material/Telegram";
 import LiveTvIcon from "@mui/icons-material/LiveTv";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import ProfileMenu from "./menuLogOut";
-import Video from "../handleVideo/video";
-import Discover from "./discover";
-import Friend from "./friend";
-import UpLoadVideo from "./uploadVideo";
-import Action from "./action";
-import Messenger from "./messenger";
-import LiveStream from "./liveStream";
-import Profile from "./profile";
+
 import LoginAndRegister from "./loginAndRegister";
 import { useContext } from "react";
 import { MyContext } from "../../context/myContext";
@@ -128,7 +120,14 @@ function Sidebar() {
           dispatch({ type: setActive, index: 3 });
 
           // verifyLogin(); // kiểm tra đăng nhập
-          login ? navigate("/upload") : handleOpen(); // nếu đã đăng nhập thì chuyển đến trang upload, nếu chưa thì mở modal đăng nhập
+          if (login) {
+            // nếu chưa đăng nhập thì mở yêu cầu đăng nhập mới cho upload video
+            navigate("/upload");
+          } else {
+            handleOpen();
+            setTimeout(() => navigate("/video"), 100); // delay 100ms để tránh xung đột để đảm bảo chạy handleOpen song song với navigate
+          }
+          // nếu đã đăng nhập thì chuyển đến trang upload, nếu chưa thì mở modal đăng nhập
           if (sharedData) {
             alert("chưa upload xong video ");
             navigate("/video");
@@ -194,7 +193,7 @@ function Sidebar() {
                 onLoginSuccess={() => {
                   setLogin(true);
 
-                  // userID(userData.userId);
+                  
                 }}
               />
             </Box>
@@ -230,7 +229,7 @@ function Sidebar() {
               withCredentials: true, // gửi cookie để xác thực đăng xuất
             }
           );
-          localStorage.clear();// khi đăng xuất thì xóa id người dùng 
+          localStorage.clear(); // khi đăng xuất thì xóa id người dùng
 
           setLogin(false); // Đặt lại trạng thái đăng nhập
           setAnchorEl(null); // Đóng menu đăng xuất

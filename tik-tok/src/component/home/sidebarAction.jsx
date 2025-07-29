@@ -13,7 +13,9 @@ function SidebarAction({
   isTablet,
   isMobile,
   isDesktop,
+  numberComment
 }) {
+  
   return (
     <div>
       <section
@@ -22,19 +24,19 @@ function SidebarAction({
           // tách biệt độc lập so với thẻ cha
           bottom: isMobile || isTablet ? "80px" : "20px", // ✅ thấp hơn trên mobile
           right: isMobile ? "20px" : isTablet ? "80px" : "420px", // ✅ Sát phải trên mobile, giữ nguyên desktop
-          marginTop:  "300px" ,// 👈 đẩy xuống cuối cột
+          marginTop: "300px", // 👈 đẩy xuống cuối cột
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           gap: isMobile ? "15px" : "10px",
-          zIndex: 9999, // ✅ rất cao để nằm trên video
+          zIndex: 900, // ✅ rất cao để nằm trên video
           pointerEvents: "auto", // ✅ đảm bảo có thể click
           transition: "right 0.3s ease", // ✅ mượt hơn khi dịch chuyển
         }}
       >
         <AccountUser />
         <Like idVideo={dataLike} numberLike={numberLike} />
-        <Comment />
+        <Comment idVideo={dataLike} numberComment={numberComment}/>
         <Share />
         <Bookmark />
         {/* <BackgroundMusic /> */}
