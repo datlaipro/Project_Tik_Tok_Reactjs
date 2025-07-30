@@ -8,10 +8,11 @@ import React, {
 import { MyContext } from "../../context/myContext";
 import api from "../../api/api";
 
-
-
 export default function SimpleComments({ close, idVideo }) {
   const lastCommentIdRef = useRef(null); // ✅ lưu id bình luận cuối
+  const commentTimestamps = useRef([]); // theo dõi thời điểm comment
+  const isBlockedRef = useRef(false);
+  const blockUntilRef = useRef(null);
 
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
@@ -20,6 +21,8 @@ export default function SimpleComments({ close, idVideo }) {
   const [isTablet, setIsTablet] = useState(
     window.innerWidth > 768 && window.innerWidth <= 1024
   );
+  const MAX_COMMENTS = 20;
+  const TIME_WINDOW_MS = 10 * 1000; // 10 giây
 
   useEffect(() => {
     const handleResize = () => {
@@ -40,6 +43,37 @@ export default function SimpleComments({ close, idVideo }) {
   const handleAddComment = async () => {
     if (newComment.trim() === "") return;
 
+    const now = Date.now();
+
+    // ⛔ Kiểm tra có đang bị chặn không
+    if (isBlockedRef.current && now < blockUntilRef.current) {
+      const secondsLeft = Math.ceil((blockUntilRef.current - now) / 1000);
+      alert(`⛔ Bạn đang bị chặn. Vui lòng thử lại sau ${secondsLeft} giây.`);
+      return;
+    }
+
+    // ✅ Nếu hết thời gian chặn, mở khóa lại
+    if (isBlockedRef.current && now >= blockUntilRef.current) {
+      isBlockedRef.current = false;
+      commentTimestamps.current = [];
+    }
+
+    // Lọc các comment trong 10 giây gần nhất
+    commentTimestamps.current = commentTimestamps.current.filter(
+      //
+      (timestamp) => now - timestamp < TIME_WINDOW_MS
+    );
+
+    if (commentTimestamps.current.length >= MAX_COMMENTS) {
+      // 🚫 Bắt đầu chặn trong 2 phút
+      isBlockedRef.current = true;
+      blockUntilRef.current = now + 2 * 60 * 1000; // 2 phút = 120000ms
+      alert("⛔️ Bạn đã gửi quá nhiều bình luận. Vui lòng thử lại sau 2 phút.");
+      return;
+    }
+
+    commentTimestamps.current.push(now);
+
     try {
       const res = await api.post("/postcomment", {
         userID,
@@ -47,11 +81,8 @@ export default function SimpleComments({ close, idVideo }) {
         comments: newComment.trim(),
       });
 
-      // const serverComment = res.data.comment // server trả về 1 comment dạng mảng
-
       const newCmt = {
-        // id: serverComment.id,
-        avatar: "https://i.pravatar.cc/40?img=5", // hoặc từ server
+        avatar: "https://i.pravatar.cc/40?img=5",
         name: username,
         content: newComment.trim(),
       };
@@ -71,15 +102,12 @@ export default function SimpleComments({ close, idVideo }) {
         }`
       );
       const newComments = res.data.comments;
-     console.log('comment',res)
-
       if (newComments.length > 0) {
         // ✅ Cập nhật lastCommentIdRef với id cuối cùng trong danh sách mới
         lastCommentIdRef.current = newComments[newComments.length - 1].id;
 
         // ✅ Nối thêm bình luận mới vào mảng cũ, không ghi đè
         setComments((prev) => [...prev, ...newComments]);
-      console.log(comments)
       }
     } catch (err) {
       console.error("❌ Lỗi khi tải thêm comment:", err);
@@ -92,15 +120,17 @@ export default function SimpleComments({ close, idVideo }) {
   const observer = useRef();
 
   const lastCommentRef = useCallback((node) => {
-    if (observer.current) observer.current.disconnect();
+    // khởi tạo rồi gán lastCommentRef cho bình luận cuối cùng
+    if (observer.current) observer.current.disconnect(); // đảm bảo comment thứ 10 được quan sát trước đó rồi thì lần tới sẽ bỏ và quan sát comment thứ 20
 
     observer.current = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting) {
+        // true nếu phần tử được quan sát nằm trong viewport
         fetchComments(); // ✅ gọi load thêm
       }
     });
 
-    if (node) observer.current.observe(node);
+    if (node) observer.current.observe(node); // nếu tải đến comment thứ 10 thì bắt đầu quan sát(chạy đoạn mã lastCommentRef)
   }, []);
 
   useEffect(() => {}, [comments]);
@@ -164,7 +194,7 @@ export default function SimpleComments({ close, idVideo }) {
           return (
             <div
               key={id + content}
-              ref={isLast ? lastCommentRef : null}
+              ref={isLast ? lastCommentRef : null} // nếu đang ở bình luận thứ 10 thì gọi thêm bình luận ra
               style={{
                 display: "flex",
                 gap: 8,
@@ -175,7 +205,7 @@ export default function SimpleComments({ close, idVideo }) {
             >
               <img
                 src={"https://i.pravatar.cc/300?img=6"}
-                alt={''}
+                alt={""}
                 style={{ width: 40, height: 40, borderRadius: "50%" }}
               />
               <div>

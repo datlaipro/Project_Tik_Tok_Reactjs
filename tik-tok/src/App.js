@@ -34,7 +34,7 @@ function App() {
   const [sharedData, setSharedData] = useState(false);// quản lí trạng thái upload video (đã upload/chưa upload)
   const [showComments, setShowComments] = useState(false)
   return (
-    <MyContext.Provider value={{ sharedData, setSharedData, showComments, setShowComments }}>
+    <MyContext.Provider value={{ sharedData, setSharedData, showComments, setShowComments,isMobile, setIsMobile }}>
       <div className="App">
         {isMobile ? (
           // 📱 Giao diện Mobile

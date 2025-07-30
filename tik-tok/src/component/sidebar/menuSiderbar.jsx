@@ -215,6 +215,7 @@ function Sidebar() {
         open={opens}
         handleClose={(event, reason) => {
           if (reason !== "backdropClick") {
+            
             navigate("/profile"); // gọi khi click vào "Hồ sơ" để show trang profile
           }
 
