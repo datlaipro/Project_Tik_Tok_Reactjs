@@ -1,9 +1,12 @@
 import ActionPattern from "./actionPattern";
 import FavoriteIcon from "@mui/icons-material/Favorite";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
+import { MyContext } from "../../context/myContext";
+
 import api from "../../api/api";
 
 function Like({ idVideo, numberLike }) {
+  const { red } = useContext(MyContext); // lấy trạng thái màu sắc từ context
   const [quantityLike, setQuantityLike] = useState(numberLike);
   const [color, setColor] = useState("none");
   var id = localStorage.getItem("id");
@@ -24,15 +27,17 @@ function Like({ idVideo, numberLike }) {
     <div>
       <ActionPattern
         parent={() => {
-          const newColor = color === "none" ? "red" : "none";
+         
+            const newColor = color === "none" ? "red" : "none";
 
-          setColor(newColor);
-          // Tính giá trị like mới
-          const newQuantity =
-            newColor === "red" ? quantityLike + 1 : quantityLike - 1;
+            setColor(newColor);
+            // Tính giá trị like mới
+            const newQuantity =
+              newColor === "red" ? quantityLike + 1 : quantityLike - 1;
 
-          setQuantityLike(newQuantity);
-          dataLike();
+            setQuantityLike(newQuantity);
+            dataLike();
+          
         }}
         data={quantityLike}
       >

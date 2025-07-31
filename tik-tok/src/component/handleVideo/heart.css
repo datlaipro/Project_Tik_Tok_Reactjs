@@ -1,0 +1,21 @@
+.floating-heart {
+  position: absolute;
+  font-size: 30px;
+  color: #ff2f6e;
+  animation: floatUp 1s ease-out forwards;
+  pointer-events: none;
+  z-index: 999;
+}
+
+.floating-heart::before {
+  content: "❤️";
+}
+@keyframes floatUp {
+  0% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.6) translateY(-100px);
+    opacity: 0;
+  }}

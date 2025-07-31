@@ -118,6 +118,7 @@ function MobileSiderbar() {
           }}
         >
           <LoginAndRegister onClose={handleClose} />
+          {/* Modal đăng nhập/đăng ký */}
         </Box>
       </Modal>
 
@@ -135,7 +136,12 @@ function MobileSiderbar() {
         title={"hồ sơ"}
         handleClick={() => {
           dispatch({ type: setActive, index: 4 });
-          navigate("/profile");
+          if (login) {// nếu đã đăng nhập thì chuyển đến trang profile
+            navigate("/profile");
+          } else {
+            handleOpen(); // Kích hoạt hiển thị form Đăng nhập hoăc Đăng ký
+            setTimeout(() => navigate("/video"), 100); // delay 100ms để tránh xung đột để đảm bảo chạy handleOpen song song với navigate
+          }
         }}
         isActive={state[4] === "red"}
       />

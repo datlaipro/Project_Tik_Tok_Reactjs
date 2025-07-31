@@ -2,6 +2,8 @@ import React, { useRef, useState, useEffect, useContext } from "react";
 import axios from "axios";
 import SidebarAction from "../home/sidebarAction";
 import { MyContext } from "../../context/myContext";
+import "./heart.css"; // Import CSS for heart animation
+import api from "../../api/api";
 function Video() {
   const [path, setPath] = useState([]); // lưu danh sách video để hiển thị ra giao diện
   const [lastId, setLastId] = useState(0); // lưu vị trí video cuối để lần sau gọi api từ video tiếp theo trong db
@@ -10,6 +12,7 @@ function Video() {
   const containerRef = useRef(null);
   const videoRefs = useRef({}); // ✅ Sửa thành object thay vì array
   const [currentId, setCurrentId] = useState(null); // ✅ Lưu id_video thay vì index
+  const { setRed } = useContext(MyContext); // nhận trạng thái màu sắc của nút tim từ context
   const { showComments } = useContext(MyContext); // nhận use id từ component menuSiderbar
   useEffect(() => {
     if (containerRef.current) {
@@ -51,7 +54,7 @@ function Video() {
       const width = window.innerWidth;
       setIsMobile(width <= 768);
       setIsTablet(width > 768 && width <= 1024);
-      setIsDesktop(width > 1300); 
+      setIsDesktop(width > 1300);
     };
 
     handleResize(); // Gọi khi lần đầu
@@ -155,6 +158,22 @@ function Video() {
       scrollToIndex(prevId);
     }
   };
+  const handleLike = (id, e) => {
+    // tạo hiệu ứng tim bay khi double click vào video
+    const container = videoRefs.current[id];
+    if (!container) return;
+
+    const heart = document.createElement("div");
+    heart.className = "floating-heart";
+    heart.style.left = `${
+      e.clientX - container.getBoundingClientRect().left
+    }px`;
+    heart.style.top = `${e.clientY - container.getBoundingClientRect().top}px`;
+
+    container.appendChild(heart);
+   
+  setTimeout(() => heart.remove(), 3000);
+  };
 
   const handleScrollDown = () => {
     const idx = path.findIndex((v) => v.id_video === currentId);
@@ -217,6 +236,15 @@ function Video() {
                 width={isMobile || isTablet ? "100%" : 540}
                 height={isMobile || isTablet ? "100vh" : 700}
                 controls
+                controlsList="nofullscreen" // ngăn khi doble click vào video thì không phóng to
+                onDoubleClick={(e) => handleLike(src.id_video, e)}
+                ref={(el) => {
+                  if (el) {
+                    videoRefs.current[src.id_video] =
+                      el.parentElement?.parentElement || el;
+                    // ✅ Gắn sự kiện ngăn double click phóng to
+                  }
+                }}
                 style={{
                   width: isMobile || isTablet ? "100vw" : 540,
                   height: isMobile || isTablet ? "100dvh" : 900, // Dùng dvh để an toàn trên mobile browser
@@ -229,6 +257,7 @@ function Video() {
                   maxWidth: "100%",
                 }}
               />
+
               <div
                 style={{
                   display: "flex",
@@ -240,13 +269,11 @@ function Video() {
                 <SidebarAction
                   dataLike={src.id_video}
                   numberLike={src.likes}
-                  
                   isTablet={isTablet}
                   isMobile={isMobile}
                   isDesktop={isDesktop}
                   showComments={showComments} // 👈 thêm dòng này
-                  numberComment={src.comments}// gửi số lượng comment của video tương ứng 
-                  
+                  numberComment={src.comments} // gửi số lượng comment của video tương ứng
                 />
               </div>
             </div>

@@ -73,7 +73,7 @@ export default function LoginAndRegister({ onClose, onLoginSuccess }) {
             onClose(); // Đóng modal sau khi đăng nhập thành công
           }, 2000);
         } catch (error) {
-          // setErrorMessage(error.response.data.message); // hiển thị thông báo lỗi đăng nhập
+          setErrorMessage(error.response.data.message); // hiển thị thông báo lỗi đăng nhập
           console.log("error", error);
           setColors("warning"); // Đặt màu sắc cho Alert
           setOpenSnackbar(true);

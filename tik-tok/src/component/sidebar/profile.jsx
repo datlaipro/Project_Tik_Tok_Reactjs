@@ -4,7 +4,16 @@ import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import LogoutIcon from "@mui/icons-material/Logout";
 import SettingsIcon from "@mui/icons-material/Settings";
-import { useEffect, useState, useRef, useCallback, useContext } from "react";
+import { useNavigate } from 'react-router-dom'; // ✅ Đúng
+
+import {
+  useEffect,
+  useState,
+  useRef,
+  useCallback,
+  useContext,
+  
+} from "react";
 import api from "../../api/api";
 import { MyContext } from "../../context/myContext";
 const userName = localStorage.getItem("username");
@@ -46,6 +55,7 @@ const Profile = () => {
       console.error("Lỗi khi fetch videos:", error);
     }
   };
+  const navigate = useNavigate(); // khởi tạo hook điều hướng
 
   useEffect(() => {
     if (!id) return;
@@ -91,7 +101,16 @@ const Profile = () => {
             </Button>
             <Button variant="outlined">Quảng bá bài đăng</Button>
             <SettingsIcon className={styles.iconBtn} />
-            {isMobile && <LogoutIcon fontSize="small" />}
+            <button
+              onClick={() => {
+                alert("Đăng xuất thành công");
+                localStorage.clear(); // khi đăng xuất thì xóa id người dùng
+                navigate("/video"); // Chuyển hướng về trang video sau khi đăng xuất
+              }}
+            >
+              {" "}
+              {isMobile && <LogoutIcon fontSize="small" />}
+            </button>
           </div>
         </div>
       </div>

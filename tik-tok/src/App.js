@@ -14,6 +14,7 @@ function App() {
   const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
   const [isDesktop, setIsDesktop] = useState(true); // mặc định là desktop
+  const [red,setRed]=useState(false);// trạng thái để quản lí màu sắc của nút tim
 
   useEffect(() => {
     const handleResize = () => {
@@ -34,7 +35,7 @@ function App() {
   const [sharedData, setSharedData] = useState(false);// quản lí trạng thái upload video (đã upload/chưa upload)
   const [showComments, setShowComments] = useState(false)
   return (
-    <MyContext.Provider value={{ sharedData, setSharedData, showComments, setShowComments,isMobile, setIsMobile }}>
+    <MyContext.Provider value={{ sharedData, setSharedData, showComments, setShowComments,isMobile, setIsMobile,red,setRed }}>
       <div className="App">
         {isMobile ? (
           // 📱 Giao diện Mobile
@@ -53,8 +54,9 @@ function App() {
               </RequireLogin>} />
             </Routes>
           </>
-        ) : isTablet ? (
-          // 📱 Giao diện Tablet (nếu bạn muốn xử lý khác mobile/desktop)
+        ) : isTablet ? ( // 📱 Giao diện Tablet
+          <>
+          <MobileSiderbar />
           <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
             <div style={{
               width: "60px", flexShrink: 0, zIndex: 2,
@@ -77,6 +79,7 @@ function App() {
               </Routes>
             </div>
           </div>
+          </>
         ) : isDesktop ? (
           // 🖥 Giao diện Desktop
           <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>

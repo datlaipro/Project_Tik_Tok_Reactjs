@@ -44,7 +44,7 @@ function ActionPattern({ children, parent, data }) {
           marginTop: "4px",
           fontWeight: "bold",
           fontSize: "14px",
-          color: isMobile || isTablet ? "white" : "black",
+          color: isMobile  ? "white" : "black",
         }}
       >
         {data}

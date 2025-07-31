@@ -50,3 +50,29 @@
     display: none;
   }
 }
+
+/* Hiển thị và chỉnh style cho tablet (768px - 1024px) */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .mobile-sidebar-wrapper {
+    height: 70px;
+        display: flex !important;
+
+    padding: 0 20px;
+    justify-content: space-between;
+    
+  }
+  
+
+  .home-button {
+    font-size: 14px;
+    padding: 8px 30px;
+  }
+
+  .home-button svg {
+    font-size: 36px !important; /* to tăng kích thước icon trên tablet */
+  }
+
+  .home-button span {
+    margin-top: 4px;
+  }
+}
