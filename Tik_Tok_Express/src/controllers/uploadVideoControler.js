@@ -1,33 +1,25 @@
 
-const express = require('express');
-const cloudinary = require('../config/cloudinary'); // Import cấu hình Cloudinary
-const fs = require('fs');// Thư viện fs để xử lý file hệ thống
-const upLoadVideoDB = require('../models/upLoadVideoDB'); // Import model lưu video
-// Sử dụng multer để lưu file tạm
+const upLoadVideoDB = require('../models/upLoadVideoDB');
+const uploadToR2 = require('../config/upLoadToR2');
+
 async function upLoadVideo(req, res) {
-
-
     try {
-        const filePath = req.file.path;
+        if (!req.file) {
+            return res.status(400).json({ message: 'Không có file video được tải lên' });
+        }
 
-        const result = await cloudinary.uploader.upload(filePath, {
-            resource_type: 'video',
-            folder: 'my_videos',
-        });
 
-        // Lưu vào DB
-        await upLoadVideoDB.upLoadVideoDB(result.secure_url, req.body.visibility, req.user.user_id);
+        // Upload lên R2
+        const { key, url } = await uploadToR2(req.file);
 
-        // Xóa file tạm
-        fs.unlinkSync(filePath);
+        // Lưu vào DB (ở đây bạn có thể lưu cả key để sau xóa cho dễ)
+        await upLoadVideoDB.upLoadVideoDB(url, req.body.visibility, req.user.user_id);
 
-        res.json({ url: result.secure_url, message: 'Video uploaded successfully' });
+        res.json({ key, url, message: 'Video uploaded successfully' });
     } catch (error) {
         console.error("Upload lỗi:", error);
         res.status(500).json({ message: 'Lỗi upload video', error });
     }
-
 }
-
 
 module.exports = upLoadVideo;

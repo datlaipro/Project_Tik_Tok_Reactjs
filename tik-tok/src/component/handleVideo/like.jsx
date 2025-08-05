@@ -6,9 +6,8 @@ import { MyContext } from "../../context/myContext";
 import api from "../../api/api";
 
 function Like({ idVideo, numberLike }) {
-  const { red } = useContext(MyContext); // lấy trạng thái màu sắc từ context
   const [quantityLike, setQuantityLike] = useState(numberLike);
-  const [color, setColor] = useState("none");
+  const [color, setColor] = useState("");
   var id = localStorage.getItem("id");
   var userID = parseInt(id);
   const dataLike = async () => {
@@ -28,7 +27,7 @@ function Like({ idVideo, numberLike }) {
       <ActionPattern
         parent={() => {
          
-            const newColor = color === "none" ? "red" : "none";
+            const newColor = color === "" ? "red" : "";
 
             setColor(newColor);
             // Tính giá trị like mới

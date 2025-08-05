@@ -72,7 +72,7 @@ function Video() {
       );
 
       const videos = res.data.path; // ✅ Đúng định dạng từ backend
-      // console.log(videos)
+      console.log(videos)
 
       if (!Array.isArray(videos) || videos.length === 0) {
         // nếu backend không trả về dữ liệu thì thôi không gọi api nữa
@@ -274,6 +274,7 @@ function Video() {
                   isDesktop={isDesktop}
                   showComments={showComments} // 👈 thêm dòng này
                   numberComment={src.comments} // gửi số lượng comment của video tương ứng
+                  numberBookmark={src.bookmarks} // gửi số lượng bookmark của video tương ứng
                 />
               </div>
             </div>
@@ -306,7 +307,7 @@ function Video() {
         <button
           onClick={handleScrollDown}
           disabled={
-            path.findIndex((v) => v.id_video === currentId) >= path.length - 1
+            path.findIndex((v) => v.id_video === currentId) >= path.length 
           }
           style={{
             ...btnStyle,

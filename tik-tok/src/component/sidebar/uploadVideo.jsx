@@ -6,7 +6,7 @@ import { useContext } from "react";
 
 import { MyContext } from "../../context/myContext";
 function UpLoadVideo() {
-  const { setSharedData } = useContext(MyContext);// trạng thái thông báo upload video 
+  const { setSharedData } = useContext(MyContext); // trạng thái thông báo upload video
   const [file, setFile] = useState(null);
   const [previewURL, setPreviewURL] = useState(""); // quản lý URL tạm thời để xem trước video
   const [visibility, setVisibility] = useState("public");
@@ -25,24 +25,24 @@ function UpLoadVideo() {
   const handleFileChange = (e) => {
     const f = e.target.files[0];
     if (!f) return;
-    const preview = URL.createObjectURL(f);
 
-    // Kiểm tra độ dài video
-    const video = document.createElement("video"); // tạo thẻ video để gán src để kiểm tra thuộc tính của video
-    video.preload = "metadata"; // chỉ tải những thông tin cần thiết của video
+    const preview = URL.createObjectURL(f); // tạo URL tạm cho preview
+
+    // Kiểm tra thời lượng video
+    const video = document.createElement("video");
+    video.preload = "metadata";
     video.src = preview;
 
     video.onloadedmetadata = () => {
-      window.URL.revokeObjectURL(preview); // Giải phóng bộ nhớ
-      const duration = video.duration; // Thời lượng (đơn vị: giây)
+      const duration = video.duration; // thời lượng tính bằng giây
 
       if (duration > 600) {
         alert("Video quá dài! Chỉ chấp nhận video dưới 10 phút.");
         setMessage("none");
-
-        return;// giúp dừng không chạy các dòng code phía dưới nữa
+        return; // dừng luôn
       }
-      // Kiểm tra xem file đã tồn tại trong arrFiles chưa
+
+      // Kiểm tra trùng file
       const isDuplicate = arrFiles.some(
         (file) =>
           file.name === f.name &&
@@ -53,14 +53,23 @@ function UpLoadVideo() {
         alert("Bạn phải thay đổi video mới thì mới được đăng!");
         setMessage("none");
         setPreviewURL(preview);
-
         return;
       }
+
+      // Lưu file và URL preview
       setFile(f);
       setPreviewURL(preview);
       setMessage("block");
     };
   };
+  useEffect(() => {
+  return () => {
+    if (previewURL) {
+      URL.revokeObjectURL(previewURL); // chỉ revoke khi đổi video hoặc unmount
+    }
+  };
+}, [previewURL]);
+
 
   const handleUpload = async () => {
     if (!file) return alert("Bạn chưa chọn file!");
@@ -70,8 +79,11 @@ function UpLoadVideo() {
 
     try {
       setLoading(true);
-      setSharedData(true); // nếu chưa upload xong thì không cho upload tiếp 
-      await api.post("/upload", formData); // gọi đến API upload video từ api.js
+      setSharedData(true); // nếu chưa upload xong thì không cho upload tiếp
+      await api.post("/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      // gọi đến API upload video từ api.js
       alert("Upload thành công!");
 
       setArrFiles((prev) => [...prev, file]); // thêm url video do người dùng đã upload để so sánh tránh up trùng video
@@ -86,7 +98,7 @@ function UpLoadVideo() {
       alert("Upload thất bại");
     } finally {
       setLoading(false);
-      setSharedData(false);// nếu upload xong rồi thì mới cho upload tiếp
+      setSharedData(false); // nếu upload xong rồi thì mới cho upload tiếp
     }
   };
 
@@ -102,7 +114,7 @@ function UpLoadVideo() {
       <input
         ref={inputRef}
         type="file"
-        accept="image/*,video/*"
+        accept="video/*"
         onChange={handleFileChange}
         style={{ display: "none" }}
       />

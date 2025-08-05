@@ -14,16 +14,21 @@ const postComment = require('../../controllers/commentController')
 const renderComment=require('../../controllers/renderCommentController')
 const limitComment=require("../../middleware/commentLimiter")// tránh spam comment
 const myvideo=require('../../controllers/myVideoController')
+const videoBookmark = require('../../controllers/renderVideoBookmark'); // chỉnh đúng đường dẫn đến file renderVideoBookmark.js
+const likeVideo =require('../../controllers/renderVideoLike') // chỉnh đúng đường dẫn đến file renderVideoLike.js
+const addBookMark= require('../../controllers/addBookmarkController'); // chỉnh đúng đường dẫn đến file addBookmarkController.js
 
 
 
-
+router.post('/addBookmark', authMiddleware, addBookMark); // Đường dẫn API để thêm video vào bookmark
+router.get('/videoBookmark', authMiddleware, videoBookmark)
 router.post('/createUser', creatAccountController.creatAccountController)// Đường dẫn API để tạo tài khoản
 router.post('/login', userLogin.loginUserController); // Đường dẫn API để đăng nhập người dùng
 router.get("/refresh/profile", verifyRefreshToken, profileUser.profileController); // Đường dẫn API để lấy thông tin người dùng đã đăng nhập);
 router.post('/refresh/logout', verifyRefreshToken, logoutController.logOutAccount); // Đường dẫn API để đăng xuất người dùng
 router.post('/upload', authMiddleware, upload.single('video'), upLoadVideo); // Đường dẫn API để upload video
 router.get('/requestVideo', videoPublicController.videoPublic); // Đường dẫn API để render video
+router.get('/likeVideo', authMiddleware, likeVideo) // Đường dẫn API để render video đã thích
 router.get('/refresh/token', verifyRefreshToken, (req, res) => {// Đường dẫn API để làm mới token
   res.json({ success: true, message: 'Token refreshed' });
 });

@@ -13,7 +13,8 @@ function SidebarAction({
   isTablet,
   isMobile,
   isDesktop,
-  numberComment
+  numberComment,
+  numberBookmark
 }) {
   
   return (
@@ -38,7 +39,7 @@ function SidebarAction({
         <Like idVideo={dataLike} numberLike={numberLike} />
         <Comment idVideo={dataLike} numberComment={numberComment}/>
         <Share />
-        <Bookmark />
+        <Bookmark idVideo={dataLike} numberBookmark={numberBookmark}/>
         {/* <BackgroundMusic /> */}
       </section>
     </div>

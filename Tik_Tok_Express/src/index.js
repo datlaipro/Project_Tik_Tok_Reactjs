@@ -16,6 +16,7 @@ app.use(
     credentials: true,               // ❗ CHO PHÉP gửi cookie
   })
 );app.use(express.json()); // 👈 đọc JSON từ body
+const likeVideo = require('./routes/AccountApi/API');
 const apiCreateAccount = require('./routes/AccountApi/API'); // chỉnh đúng đường dẫn đến file creatAccount.js
 const apiLoginAccount = require('./routes/AccountApi/API'); // chỉnh đúng đường dẫn đến file loginAccount.js
 const apiProfileUser = require('./routes/AccountApi/API') // chỉnh đúng đường dẫn đến file profileController.js
@@ -26,6 +27,9 @@ const authRoutes=require('./routes/AccountApi/API');
 const emotionalUpdates= require('./routes/AccountApi/API');//  chỉnh đúng đường dẫn đến file update like
 const renderComments=require('./routes/AccountApi/API');
 const myvideo=require('./routes/AccountApi/API');
+const addBookMark =require('./routes/AccountApi/API');
+
+const videoBookmark = require('./routes/AccountApi/API'); // chỉnh đúng đường dẫn đến file renderVideoBookmark.js
 const port = process.env.PORT
 app.use(cookieParser());
 
@@ -33,6 +37,11 @@ require('dotenv').config()// thư viện dotenv để đọc biến môi trườ
 // const router = require('./routes/Account/creatAccount'); // chỉnh đúng đường dẫn đến file creatAccount.js
 app.use(morgan('combined')) // sử dụng morgan với định dạng 'dev' để log request
 
+
+
+app.use('/api', addBookMark);
+app.use('/api', videoBookmark);
+app.use('/api', likeVideo);   // sử dụng router cho các API liên quan đến render video đã thích
 app.use('/api', apiCreateAccount); // sử dụng router cho các API liên quan đến đăng kí  tài khoản
 app.use('/api', apiLoginAccount)// sử dụng router cho các API liên quan đến đăng nhập tài khoản
 app.use('/api', apiProfileUser)// sử dụng router cho các API liên quan đến lấy thông tin người dùng đã đăng nhập

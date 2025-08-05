@@ -4,7 +4,9 @@ import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import LogoutIcon from "@mui/icons-material/Logout";
 import SettingsIcon from "@mui/icons-material/Settings";
-import { useNavigate } from 'react-router-dom'; // ✅ Đúng
+import { useNavigate } from "react-router-dom"; // ✅ Đúng
+import BookmarkIcon from "@mui/icons-material/Bookmark";
+import FavoriteIcon from "@mui/icons-material/Favorite";
 
 import {
   useEffect,
@@ -12,78 +14,113 @@ import {
   useRef,
   useCallback,
   useContext,
-  
+  useReducer,
 } from "react";
 import api from "../../api/api";
 import { MyContext } from "../../context/myContext";
 const userName = localStorage.getItem("username");
+const colorButton = [
+  // khởi tạo mảng màu sắc của các nút trong profile
+  "red",
+  "black",
+  "black",
+];
 
+const setActive = "SET_ACTIVE"; // khởi tạo action để set màu sắc của các nút trong profile
+const reducer = (state, action) => {
+  switch (action.type) {
+    case setActive:
+      return state.map((_, index) =>
+        index === action.index ? "red" : "black"
+      );
+    default:
+      return state;
+  }
+};
 const Profile = () => {
+  const [state, dispatch] = useReducer(reducer, colorButton); // sử lí màu sắc của các nút trong profile
+  const navigate = useNavigate(); // khởi tạo hook điều hướng
+
   const { isMobile } = useContext(MyContext);
   const lastMyIDVideo = useRef(); // lưu id video cuối cùng để render thêm video
   const [path, setPath] = useState([]); // lưu đường dẫn video
+  const [myVideoAPI, setMyVideoAPI] = useState("myvideo"); // lưu đường dẫn api video của user
+  // const [likeVideoAPI, setLikeVideoAPI] = useState("likevideo"); // lưu đường dẫn api video đã like
+  // const [bookmarkVideoAPI, setBookmarkVideoAPI] = useState("bookmarkvideo"); // lưu đường dẫn api video đã bookmark
   const [id, setId] = useState(localStorage.getItem("id")); //lưu id người dùng, khi đăng nhập tài khoản khác sẽ render lại video của tài khoản mới đó
-  const fetchVideos = useRef(null); // tránh bị re-create mỗi lần render
+  // const fetchVideos = useRef(null); // tránh bị re-create mỗi lần render
   const [hasMore, setHasMore] = useState(true); // kiểm soát còn dữ liệu không
-  var count = 0;
-  fetchVideos.current = async () => {
-    if (!id || !hasMore) return;
+ const fetchVideos = useCallback(async () => {
+  if (!id || !hasMore) return;
 
-    try {
-      const res = await api.get("/myvideo", {
-        params: {
-          user_id: id,
-          last_id: lastMyIDVideo.current || 0,
-        },
-      });
-      const result = res.data.myvideo;
+  try {
+    const res = await api.get(`/${myVideoAPI}`, {
+      params: {
+        user_id: id,
+        last_id: lastMyIDVideo.current || 0,
+      },
+    });
 
-      if (result.length === 0) {
-        setHasMore(false); // ❌ không còn video
-        return;
-      }
+    const result = res.data[myVideoAPI];
+    console.log("api", myVideoAPI);
 
-      const videos = result.map((row) => ({
-        id_video: row.id_video,
-        path: row.path,
-      }));
-      lastMyIDVideo.current = result[result.length - 1].id_video;
-
-      setPath((prev) => [...prev, ...videos]);
-      // console.log(path)
-    } catch (error) {
-      console.error("Lỗi khi fetch videos:", error);
+    if (result.length === 0) {
+      setHasMore(false);
+      return;
     }
-  };
-  const navigate = useNavigate(); // khởi tạo hook điều hướng
 
-  useEffect(() => {
-    if (!id) return;
-    setPath([]); // nếu người dùng đăng xuất thì mất video
-    lastMyIDVideo.current = null;
-    setHasMore(true); // reset trạng thái
-    fetchVideos.current(); // gọi video lần đầu tiên
-    console.log("isLast", count++);
-  }, [id]);
+    const videos = result.map((row) => ({
+      id_video: row.id_video,
+      path: row.path,
+    }));
+
+    lastMyIDVideo.current = result[result.length - 1].id_video;
+    setPath((prev) => [...prev, ...videos]);
+  } catch (error) {
+    console.error("Lỗi khi fetch videos:", error);
+  }
+}, [id, myVideoAPI]); // ✅ myVideoAPI là dependency ở đây
+
+
+ useEffect(() => {
+  if (!id) return;
+
+  // Ngắt observer cũ ngay khi đổi tab
+  if (observer.current) {
+    observer.current.disconnect();
+    observer.current = null;
+  }
+
+  // Reset toàn bộ
+  setPath([]);
+  lastMyIDVideo.current = 0;
+  setHasMore(true);
+
+  // Gọi API load lần đầu
+  fetchVideos();
+}, [id, myVideoAPI, fetchVideos]);
+
+//c myVideoAPI thay đổi thì gọi lại hàm fetchVideos
 
   const observer = useRef();
 
-  const lastMy_Video = useCallback(
-    (node) => {
-      if (observer.current) observer.current.disconnect();
+ const lastMy_Video = useCallback(
+  (node) => {
+    if (!node) return;
 
-      observer.current = new IntersectionObserver((entries) => {
-        // gọi load thêm video khi hết
-        if (entries[0].isIntersecting && hasMore) {
-          // khi load đến cuối thì gọi load thêm video
-          fetchVideos.current();
-        }
-      });
+    // Tạo observer mới cho phần tử mới cuối
+    const newObserver = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && hasMore) {
+        fetchVideos();
+      }
+    });
 
-      if (node) observer.current.observe(node);
-    },
-    [hasMore]
-  );
+    newObserver.observe(node);
+    observer.current = newObserver;
+  },
+  [hasMore, fetchVideos]
+);
+
 
   return (
     <div className={styles.profileWrapper}>
@@ -128,12 +165,50 @@ const Profile = () => {
       </div>
 
       <p className={styles.bio}>Chưa có tiểu sử.</p>
-
       <div className={styles.tabs}>
-        <span className={styles.activeTab}>Video</span>
-        <span>Yêu thích</span>
-        <span>Đã thích</span>
+        <span
+          onClick={() => {
+            dispatch({ type: setActive, index: 0 });
+            setMyVideoAPI("myvideo");
+          }}
+          style={{
+            color: state[0],
+          }}
+        >
+          Video
+        </span>
+        <span
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "4px",
+            color: state[1],
+          }}
+          onClick={() => {
+            dispatch({ type: setActive, index: 1 });
+            setMyVideoAPI("videoBookmark"); // khi click vào nút đã thích thì sẽ chuyển sang api likevideo để lấy video đã thích
+          }}
+        >
+          Yêu thích
+          <BookmarkIcon sx={{ fontSize: 18 }} />
+        </span>
+        <span
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "4px",
+            color: state[2],
+          }}
+          onClick={() => {
+            dispatch({ type: setActive, index: 2 });
+            setMyVideoAPI("likeVideo"); // khi click vào nút đã bookmark thì sẽ chuyển sang api bookmarkvideo để lấy video đã bookmark
+          }}
+        >
+          Đã thích
+          <FavoriteIcon sx={{ fontSize: 18 }} />
+        </span>
       </div>
+
       <div className={styles.videos}>
         {path.map((video, index) => {
           const isLast = index === path.length - 1;
@@ -141,7 +216,7 @@ const Profile = () => {
             <div
               className={styles.video}
               key={video.id_video}
-              ref={isLast ? lastMy_Video : null}
+              ref={isLast ? lastMy_Video : null}// nếu là video cuối cùng thì gán ref để IntersectionObserver  theo dõi
             >
               <video src={video.path} muted />
               <span className={styles.views}>0</span>
@@ -154,3 +229,5 @@ const Profile = () => {
 };
 
 export default Profile;
+
+
