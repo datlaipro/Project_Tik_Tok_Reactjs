@@ -1,11 +1,10 @@
 
 const express = require('express')
-require('dotenv').config()// thư viện dotenv để đọc biến môi trường từ file .env và phải được gọi trước khi sử dụng bất kỳ biến môi trường nào
-
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });//tìm file env ở thư mục gốc
 const app = express()
 const cookieParser = require("cookie-parser");// thư viện cookie-parser để xử lý cookie từ phía client
 
-const path = require('path') // thư viện path để xử lý đường dẫn
 const morgan = require('morgan')//thư viện morgan để log request http từ phía client
 
 
@@ -33,9 +32,30 @@ const videoBookmark = require('./routes/AccountApi/API'); // chỉnh đúng đư
 const port = process.env.PORT
 app.use(cookieParser());
 
-require('dotenv').config()// thư viện dotenv để đọc biến môi trường từ file .env
 // const router = require('./routes/Account/creatAccount'); // chỉnh đúng đường dẫn đến file creatAccount.js
 app.use(morgan('combined')) // sử dụng morgan với định dạng 'dev' để log request
+// redisClient.js
+// const redis = require('redis');
+
+// const redisClient = redis.createClient({
+//   socket: {
+//     host: process.env.REDIS_HOST ,
+//     port: process.env.REDIS_PORT , // 
+//   },
+//   username:  process.env.REDIS_USERNAME, // mặc định của Redis Cloud
+//   password: process.env.REDIS_PASSWORD, //
+// });
+
+// redisClient.connect();
+
+// redisClient.on('connect', () => {
+//   console.log('✅ Đã kết nối Redis Cloud!');
+// });
+
+// redisClient.on('error', (err) => {
+//   console.error('❌ Redis error:', err);
+// });
+
 
 
 

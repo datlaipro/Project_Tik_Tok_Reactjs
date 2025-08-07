@@ -12,7 +12,6 @@ function Video() {
   const containerRef = useRef(null);
   const videoRefs = useRef({}); // ✅ Sửa thành object thay vì array
   const [currentId, setCurrentId] = useState(null); // ✅ Lưu id_video thay vì index
-  const { setRed } = useContext(MyContext); // nhận trạng thái màu sắc của nút tim từ context
   const { showComments } = useContext(MyContext); // nhận use id từ component menuSiderbar
   useEffect(() => {
     if (containerRef.current) {
@@ -72,7 +71,6 @@ function Video() {
       );
 
       const videos = res.data.path; // ✅ Đúng định dạng từ backend
-      console.log(videos)
 
       if (!Array.isArray(videos) || videos.length === 0) {
         // nếu backend không trả về dữ liệu thì thôi không gọi api nữa
@@ -118,7 +116,6 @@ function Video() {
             (v) => Number(v.target.dataset.index) === Number(el.dataset.index) // so sánh id_video
           );
           isVisible ? videoTag.play().catch(() => {}) : videoTag.pause();
-          // console.log("visible", isVisible);
         });
         if (visible.length > 0) {
           const id = Number(visible[0].target.dataset.index); // Lấy id_video của video đang hiển thị nhiều nhất

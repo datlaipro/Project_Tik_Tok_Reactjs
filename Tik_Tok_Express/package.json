@@ -22,7 +22,8 @@
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.1",
     "multer-storage-cloudinary": "^4.0.0",
-    "mysql2": "^3.14.1"
+    "mysql2": "^3.14.1",
+    "redis": "^5.8.0"
   },
   "devDependencies": {
     "dotenv": "^16.5.0",

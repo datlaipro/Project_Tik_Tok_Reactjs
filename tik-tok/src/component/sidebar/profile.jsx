@@ -50,77 +50,78 @@ const Profile = () => {
   const [id, setId] = useState(localStorage.getItem("id")); //lưu id người dùng, khi đăng nhập tài khoản khác sẽ render lại video của tài khoản mới đó
   // const fetchVideos = useRef(null); // tránh bị re-create mỗi lần render
   const [hasMore, setHasMore] = useState(true); // kiểm soát còn dữ liệu không
- const fetchVideos = useCallback(async () => {
-  if (!id || !hasMore) return;
+  const fetchVideos = useCallback(async () => {
+    if (!id ) return;// nếu không có id thì không gọi api
 
-  try {
-    const res = await api.get(`/${myVideoAPI}`, {
-      params: {
-        user_id: id,
-        last_id: lastMyIDVideo.current || 0,
-      },
-    });
+    try {
+      const res = await api.get(`/${myVideoAPI}`, {
+        params: {
+          user_id: id,
+          last_id: lastMyIDVideo.current || 0,
+        },
+      });
 
-    const result = res.data[myVideoAPI];
-    console.log("api", myVideoAPI);
+      const result = res.data[myVideoAPI];
 
-    if (result.length === 0) {
-      setHasMore(false);
-      return;
+      if (result.length === 0) {// khi không còn video nào để load nữa thì set hasMore là false để không gọi api nữa
+        setHasMore(false);
+        return;
+      }
+
+      const videos = result.map((row) => ({
+        id_video: row.id_video,
+        path: row.path,
+      }));
+
+      lastMyIDVideo.current = result[result.length - 1].id_video;
+      setPath((prev) => [...prev, ...videos]);
+    } catch (error) {
+      console.error("Lỗi khi fetch videos:", error);
+    }
+  }, [id, myVideoAPI]); // ✅ myVideoAPI là dependency ở đây
+
+  useEffect(() => {
+    if (!id) return;
+
+    // Ngắt observer cũ ngay khi đổi tab
+    if (observer.current) {
+      observer.current.disconnect();
+      observer.current = null;
     }
 
-    const videos = result.map((row) => ({
-      id_video: row.id_video,
-      path: row.path,
-    }));
+    // Reset toàn bộ
+    setPath([]);
+    lastMyIDVideo.current = 0;
+    setHasMore(true);
 
-    lastMyIDVideo.current = result[result.length - 1].id_video;
-    setPath((prev) => [...prev, ...videos]);
-  } catch (error) {
-    console.error("Lỗi khi fetch videos:", error);
-  }
-}, [id, myVideoAPI]); // ✅ myVideoAPI là dependency ở đây
+    // Gọi API load lần đầu
+    fetchVideos();
+  }, [id, myVideoAPI,fetchVideos]);
 
-
- useEffect(() => {
-  if (!id) return;
-
-  // Ngắt observer cũ ngay khi đổi tab
-  if (observer.current) {
-    observer.current.disconnect();
-    observer.current = null;
-  }
-
-  // Reset toàn bộ
-  setPath([]);
-  lastMyIDVideo.current = 0;
-  setHasMore(true);
-
-  // Gọi API load lần đầu
-  fetchVideos();
-}, [id, myVideoAPI, fetchVideos]);
-
-//c myVideoAPI thay đổi thì gọi lại hàm fetchVideos
+  //c myVideoAPI thay đổi thì gọi lại hàm fetchVideos
 
   const observer = useRef();
 
- const lastMy_Video = useCallback(
-  (node) => {
-    if (!node) return;
+  const lastMy_Video = useCallback(
+    (node) => {
+      if (!node) return;
+      if (observer.current) observer.current.disconnect(); // cleanup
 
-    // Tạo observer mới cho phần tử mới cuối
-    const newObserver = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting && hasMore) {
-        fetchVideos();
-      }
-    });
+      // Tạo observer mới cho phần tử mới cuối
+      const newObserver = new IntersectionObserver((entries) => {
 
-    newObserver.observe(node);
-    observer.current = newObserver;
-  },
-  [hasMore, fetchVideos]
-);
+        if (entries[0].isIntersecting && hasMore) {
+          // khi phần tử cuối cùng xuất hiện trong viewport và còn dữ liệu để load
 
+          fetchVideos();
+        }
+      });
+
+      newObserver.observe(node);
+      observer.current = newObserver;
+    },
+    [hasMore, fetchVideos]
+  );
 
   return (
     <div className={styles.profileWrapper}>
@@ -216,7 +217,7 @@ const Profile = () => {
             <div
               className={styles.video}
               key={video.id_video}
-              ref={isLast ? lastMy_Video : null}// nếu là video cuối cùng thì gán ref để IntersectionObserver  theo dõi
+              ref={isLast ? lastMy_Video : null} // nếu là video cuối cùng thì gán ref để IntersectionObserver  theo dõi
             >
               <video src={video.path} muted />
               <span className={styles.views}>0</span>
@@ -229,5 +230,3 @@ const Profile = () => {
 };
 
 export default Profile;
-
-

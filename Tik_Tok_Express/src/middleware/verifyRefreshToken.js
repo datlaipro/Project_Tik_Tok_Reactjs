@@ -1,5 +1,7 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });//tìm file env ở thư mục gốc
 const configDB = require('../config/database'); // đừng quên import nếu chưa có
 const SECRET_KEY = process.env.JWT_SECRET;
 const REFRESH_EXPIRE = '7d';

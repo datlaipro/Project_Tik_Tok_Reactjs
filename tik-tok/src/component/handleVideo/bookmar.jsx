@@ -4,7 +4,6 @@ import { useState } from "react";
 import api from "../../api/api";// 
 
 function Bookmark({idVideo,numberBookmark}) {
-  console.log('bookmark ',numberBookmark)
    const [quantityBookmark, setQuantityBookmark] = useState(numberBookmark);
   const [color, setColor] = useState("");
   var id = localStorage.getItem("id");// lấy id người dùng từ localStorage

@@ -16,7 +16,7 @@ function Like({ idVideo, numberLike }) {
         userID, // gửi giá trị mới tính lên sever
         idVideo,
       });
-      console.log("Server response:", res.data);
+      // console.log("Server response:", res.data);
     } catch (err) {
       console.error("Lỗi gửi like:", err);
     }

@@ -1,4 +1,6 @@
 const jwt = require('jsonwebtoken');
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });//tìm file env ở thư mục gốc
 const SECRET_KEY = process.env.JWT_SECRET;
 
 function authMiddleware(req, res, next) {
@@ -13,7 +15,8 @@ function authMiddleware(req, res, next) {
             req.user = decoded;     // Gắn thông tin người dùng đã giải mã vào req
             next();                 // Cho phép đi tiếp đến middleware tiếp theo
         } catch (err) {
-            
+              console.error("❌ Token không hợp lệ:", err.message); // ✅ Log chi tiết
+
             res.status(403).json({ message: "lỗi hệ thống" });
         }
     }
