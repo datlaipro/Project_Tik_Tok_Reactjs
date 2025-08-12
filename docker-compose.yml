@@ -10,9 +10,8 @@ services:
     volumes:
       - db_data:/var/lib/mysql
       - ./db:/docker-entrypoint-initdb.d:ro
-    # Mở cổng DB ra ngoài nếu bạn cần quản trị từ máy local
     ports:
-      - "3307:3306"
+      - "3307:3306"   # mở ra ngoài nếu cần quản trị
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-prootpass"]
       interval: 5s
@@ -50,25 +49,22 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    # Không publish ra ngoài, chỉ cho Nginx truy cập qua mạng nội bộ
     expose:
-      - "4000"
+      - "4000"      # chỉ cho nội bộ, Nginx reverse proxy vào
     restart: unless-stopped
 
   web:
     build:
       context: ./tik-tok
       args:
-        # FE sẽ gọi BE qua subdomain api.tiktok.io.vn
         REACT_APP_URL_API: "https://api.tiktok.io.vn"
     container_name: tikweb
     env_file:
       - ./tik-tok/.env
     depends_on:
       - api
-    # FE (nginx trong container) listen 80 nội bộ
     expose:
-      - "80"
+      - "80"        # FE serve trên 80 nội bộ, Nginx reverse proxy vào
     restart: unless-stopped
 
   nginx:
@@ -79,12 +75,26 @@ services:
       - api
     ports:
       - "80:80"
-      # - "443:443" # mở khi cấu hình SSL
+      - "443:443"
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - ./nginx/logs:/var/log/nginx
-      # - ./nginx/certs:/etc/nginx/certs:ro # nếu tự cấp SSL
+      - ./nginx/certbot/www:/var/www/certbot
+      - ./nginx/certbot/conf:/etc/letsencrypt
     restart: unless-stopped
+
+  certbot:
+    image: certbot/certbot
+    container_name: tikcertbot
+    volumes:
+      - ./nginx/certbot/www:/var/www/certbot
+      - ./nginx/certbot/conf:/etc/letsencrypt
+    entrypoint: >
+      sh -c "trap exit TERM;
+      while :; do
+        certbot renew --webroot -w /var/www/certbot --quiet --deploy-hook 'nginx -s reload';
+        sleep 12h;
+      done"
 
 volumes:
   db_data:
