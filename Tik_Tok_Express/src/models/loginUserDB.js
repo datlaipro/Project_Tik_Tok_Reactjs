@@ -1,5 +1,9 @@
 const configDB = require('../config/database');
 const bcrypt = require('bcrypt');
+const path = require('path');
+
+require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });//tìm file env ở thư mục gốc
+
 const jwt = require('jsonwebtoken');
 const REFRESH_EXPIRE = '7d';// Thời gian hết hạn của token refresh
 

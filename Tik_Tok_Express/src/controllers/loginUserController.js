@@ -8,14 +8,14 @@ async function loginUserController(req, res) {
 
             res.cookie("token", result.token, {
                 httpOnly: true,
-                secure: false,       // Bật true khi dùng HTTPS
-                sameSite: "lax",
+                secure: true,       // Bật true khi dùng HTTPS
+                sameSite: "none",
                 maxAge: 5 * 60 * 1000, // 5 phút
             });
             res.cookie("refreshToken", result.refreshToken, {// Lưu refresh token vào cookie
                 httpOnly: true,
-                secure: false,       // Bật true khi dùng HTTPS
-                sameSite: "lax",
+                secure: true,       // Bật true khi dùng HTTPS
+                sameSite: "none",
                 maxAge: 7 * 24 * 60 * 60 * 1000, // 7 ngày
                 path: '/api/refresh' // 👈 Cookie chỉ được gửi khi truy cập /refresh
             });

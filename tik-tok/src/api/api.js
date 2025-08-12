@@ -1,8 +1,9 @@
 // src/api.js
 import axios from "axios";
+const API = process.env.REACT_APP_URL_API;// sử dụng biến môi trường để lấy URL API
 
 const api = axios.create({
-  baseURL: "http://localhost:4000/api",
+  baseURL: API ,// sử dụng biến môi trường để lấy URL API
   withCredentials: true, // tự gửi cookie token / refreshToken
 });
 

@@ -4,6 +4,7 @@ import SidebarAction from "../home/sidebarAction";
 import { MyContext } from "../../context/myContext";
 import "./heart.css"; // Import CSS for heart animation
 import api from "../../api/api";
+const API = process.env.REACT_APP_URL_API; // sử dụng biến môi trường để lấy URL API
 function Video() {
   const [path, setPath] = useState([]); // lưu danh sách video để hiển thị ra giao diện
   const [lastId, setLastId] = useState(0); // lưu vị trí video cuối để lần sau gọi api từ video tiếp theo trong db
@@ -67,7 +68,7 @@ function Video() {
     setIsLoading(true);
     try {
       const res = await axios.get(
-        `http://localhost:4000/api/requestVideo?lastId=${lastId}`
+        `${API}/requestVideo?lastId=${lastId}`
       );
 
       const videos = res.data.path; // ✅ Đúng định dạng từ backend

@@ -1,17 +1,18 @@
 
 const express = require('express')
 const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });//tìm file env ở thư mục gốc
 const app = express()
+require('dotenv').config()
 const cookieParser = require("cookie-parser");// thư viện cookie-parser để xử lý cookie từ phía client
+console.log('CORS_ORIGIN =', process.env.CORS_ORIGIN); // phải in ra http://localhost:3000
 
 const morgan = require('morgan')//thư viện morgan để log request http từ phía client
 
-
+app.set('trust proxy', 1); // nếu đứng sau Nginx/HTTPS
 const cors = require('cors'); // 👈 import thư viện
 app.use(
   cors({
-    origin: "http://localhost:3000", // hoặc nơi bạn chạy React
+    origin: ['https://www.tiktok.io.vn'], // FE origin // hoặc nơi bạn chạy React
     credentials: true,               // ❗ CHO PHÉP gửi cookie
   })
 );app.use(express.json()); // 👈 đọc JSON từ body
@@ -34,30 +35,53 @@ app.use(cookieParser());
 
 // const router = require('./routes/Account/creatAccount'); // chỉnh đúng đường dẫn đến file creatAccount.js
 app.use(morgan('combined')) // sử dụng morgan với định dạng 'dev' để log request
-// redisClient.js
-// const redis = require('redis');
-
-// const redisClient = redis.createClient({
-//   socket: {
-//     host: process.env.REDIS_HOST ,
-//     port: process.env.REDIS_PORT , // 
-//   },
-//   username:  process.env.REDIS_USERNAME, // mặc định của Redis Cloud
-//   password: process.env.REDIS_PASSWORD, //
-// });
-
-// redisClient.connect();
-
-// redisClient.on('connect', () => {
-//   console.log('✅ Đã kết nối Redis Cloud!');
-// });
-
-// redisClient.on('error', (err) => {
-//   console.error('❌ Redis error:', err);
-// });
 
 
+const pool = require('../src/config/database'); // import pool từ file database.js
 
+app.get('/api/dbping', async (req, res) => {
+  try {
+    await pool.query('SELECT 1');
+    res.json({ db: 'up' });
+  } catch (e) {
+    res.status(500).json({ db: 'down', error: e.message });
+  }
+});
+
+// server.js (hoặc app.js)
+const http = require('http');
+const app = require('./app'); // express instance
+const { ensureConnected } = require('./config/redisClient');// import cấu hình redis
+
+(async () => {
+  try {
+    await ensureConnected();
+    const server = http.createServer(app);
+    const PORT = process.env.PORT || 4000;
+    server.listen(PORT, () => {
+      console.log(`🚀 Server listening on port ${PORT}`);
+    });
+
+    // graceful shutdown
+    process.on('SIGINT', async () => {
+      console.log('\n👋 Shutting down...');
+      try { await require('./src/config/redisClient').redisClient.quit(); } catch {}
+      process.exit(0);
+    });
+  } catch (e) {
+    console.error('❌ Failed to start server due to Redis:', e);
+    process.exit(1);
+  }
+})();
+
+
+
+
+
+
+app.get('/api/health', (req, res) => {
+  res.json({ ok: true });
+});
 
 app.use('/api', addBookMark);
 app.use('/api', videoBookmark);

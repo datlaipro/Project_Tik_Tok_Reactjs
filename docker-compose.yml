@@ -1,0 +1,91 @@
+version: "3.9"
+
+services:
+  db:
+    image: mysql:5.7
+    container_name: tikdb
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: video_platform
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./db:/docker-entrypoint-initdb.d:ro
+    # Mở cổng DB ra ngoài nếu bạn cần quản trị từ máy local
+    ports:
+      - "3307:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-prootpass"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: tikredis
+    command: ["redis-server", "--appendonly", "yes", "--protected-mode", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ./Tik_Tok_Express
+    container_name: tikapi
+    env_file:
+      - ./Tik_Tok_Express/.env
+    environment:
+      NODE_ENV: production
+      DB_HOST: db
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      # REDIS_PASSWORD: "yourStrongPass"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    # Không publish ra ngoài, chỉ cho Nginx truy cập qua mạng nội bộ
+    expose:
+      - "4000"
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./tik-tok
+      args:
+        # FE sẽ gọi BE qua subdomain api.tiktok.io.vn
+        REACT_APP_URL_API: "https://api.tiktok.io.vn"
+    container_name: tikweb
+    env_file:
+      - ./tik-tok/.env
+    depends_on:
+      - api
+    # FE (nginx trong container) listen 80 nội bộ
+    expose:
+      - "80"
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    container_name: tiknginx
+    depends_on:
+      - web
+      - api
+    ports:
+      - "80:80"
+      # - "443:443" # mở khi cấu hình SSL
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/logs:/var/log/nginx
+      # - ./nginx/certs:/etc/nginx/certs:ro # nếu tự cấp SSL
+    restart: unless-stopped
+
+volumes:
+  db_data:
+  redis_data:

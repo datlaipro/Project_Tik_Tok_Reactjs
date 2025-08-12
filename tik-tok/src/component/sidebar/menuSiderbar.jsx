@@ -36,7 +36,7 @@ const stateColor = [
   "none",
 ]; // khởi tạo mảng màu sắc của các nút sidebar
 const setActive = "SET_ACTIVE";
-
+const API = process.env.REACT_APP_URL_API; // sử dụng biến môi trường để lấy URL API
 const reducer = (state, action) => {
   switch (action.type) {
     case setActive:
@@ -64,7 +64,7 @@ function Sidebar() {
   // Khi load lại trang, kiểm tra trạng thái đăng nhập
   useEffect(() => {
     axios
-      .get("http://localhost:4000/api/refresh/profile", {
+      .get(`${API}/refresh/profile`, {
         withCredentials: true,
       })
       .then((res) => {
@@ -224,7 +224,7 @@ function Sidebar() {
         logOut={() => {
           // xử lí đăng xuất
           axios.post(
-            "http://localhost:4000/api/refresh/logout",
+            `${API}/refresh/logout`,
             {},
             {
               withCredentials: true, // gửi cookie để xác thực đăng xuất

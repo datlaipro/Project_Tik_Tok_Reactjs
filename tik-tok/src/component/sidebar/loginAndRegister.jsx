@@ -14,7 +14,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import axios from "axios";
 import { MyContext } from "../../context/myContext";
 import { useContext } from "react";
-
+const API = process.env.REACT_APP_URL_API;// sử dụng biến môi trường để lấy URL API
 export default function LoginAndRegister({ onClose, onLoginSuccess }) {
   // component xử lý đăng nhập và đăng ký tài khoản
   const [errorMessage, setErrorMessage] = useState(""); // Thêm state để lưu thông báo lỗi hoặc thành công
@@ -42,7 +42,7 @@ export default function LoginAndRegister({ onClose, onLoginSuccess }) {
       const login = async () => {
         try {
           const res = await axios.post(
-            "http://localhost:4000/api/login",
+            `${API}/login`, // sử dụng biến môi trường để lấy URL API
             {
               account: formData.username,
               password: formData.password,
@@ -57,7 +57,6 @@ export default function LoginAndRegister({ onClose, onLoginSuccess }) {
           };
           onLoginSuccess?.(userData); // gọi nếu hàm tồn tại
           window.location.reload();// sau khi login thành công thì reload lại trang để cập nhật tên đăng nhập 
-
 
           //  Đây là chỗ  báo ra ngoài trạng thái đăng nhập
           localStorage.setItem("id", userData.userId); // lưu id và tên người dùng vào localStorage
@@ -84,7 +83,7 @@ export default function LoginAndRegister({ onClose, onLoginSuccess }) {
       // Gọi API đăng ký account user ở đây
       const register = async () => {
         try {
-          await axios.post("http://localhost:4000/api/createUser", {
+          await axios.post(`${API}/createUser`, {
             account: formData.username, // gửi tên tài khoản lên server
             password: formData.password, // gửi mật khẩu lên server
           });
