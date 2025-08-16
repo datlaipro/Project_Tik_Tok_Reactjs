@@ -1,41 +1,47 @@
+// routes/AccountApi/API.js
 const express = require('express');
-const authMiddleware = require('../../middleware/verifyCookie'); // chỉnh đúng đường dẫn đến file verifyCookie.js
-const verifyRefreshToken = require('../../middleware/verifyRefreshToken'); // chỉnh đúng đường dẫn đến file verifyRefreshToken.js
-const creatAccountController = require('../../controllers/creatUserController'); // chỉnh đúng đường dẫn đến file creatUserController.js
-const userLogin = require('../../controllers/loginUserController'); // chỉnh đúng đường dẫn đến file loginUserController.js
 const router = express.Router();
-const upload = require('../../middleware/upLoadVideo'); // chỉnh đúng đường dẫn đến file upLoadVideo.js
-const profileUser = require('../../controllers/profileController'); // chỉnh đúng đường dẫn đến file profileUserController.js
-const logoutController = require('../../controllers/logoutController'); // chỉnh đúng đường dẫn đến file logoutController.js
-const upLoadVideo = require('../../controllers/uploadVideoControler'); // chỉnh đúng đường dẫn đến file uploadVideoControler.js
-const videoPublicController = require('../../controllers/videoPublicController'); // chỉnh đúng đường dẫn đến file videoPublicController.js
-const updateLike = require('../../controllers/updateLikeController')
-const postComment = require('../../controllers/commentController')
-const renderComment=require('../../controllers/renderCommentController')
-const limitComment=require("../../middleware/commentLimiter")// tránh spam comment
-const myvideo=require('../../controllers/myVideoController')
-const videoBookmark = require('../../controllers/renderVideoBookmark'); // chỉnh đúng đường dẫn đến file renderVideoBookmark.js
-const likeVideo =require('../../controllers/renderVideoLike') // chỉnh đúng đường dẫn đến file renderVideoLike.js
-const addBookMark= require('../../controllers/addBookmarkController'); // chỉnh đúng đường dẫn đến file addBookmarkController.js
 
+const authMiddleware = require('../../middleware/verifyCookie');
+const verifyRefreshToken = require('../../middleware/verifyRefreshToken');
 
+const userLogin = require('../../controllers/loginUserController');
+const creatAccountController = require('../../controllers/creatUserController');
+const videoPublicController = require('../../controllers/videoPublicController');
+const profileUser = require('../../controllers/profileController');
+const logoutController = require('../../controllers/logoutController');
+const upload = require('../../middleware/upLoadVideo');
+const upLoadVideo = require('../../controllers/uploadVideoControler');
+const updateLike = require('../../controllers/updateLikeController');
+const postComment = require('../../controllers/commentController');
+const renderComment = require('../../controllers/renderCommentController');
+const limitComment = require('../../middleware/commentLimiter');
+const myvideo = require('../../controllers/myVideoController');
+const videoBookmark = require('../../controllers/renderVideoBookmark');
+const likeVideo = require('../../controllers/renderVideoLike');
+const addBookMark = require('../../controllers/addBookmarkController');
 
-router.post('/addBookmark', authMiddleware, addBookMark); // Đường dẫn API để thêm video vào bookmark
-router.get('/videoBookmark', authMiddleware, videoBookmark)
-router.post('/createUser', creatAccountController.creatAccountController)// Đường dẫn API để tạo tài khoản
-router.post('/login', userLogin.loginUserController); // Đường dẫn API để đăng nhập người dùng
-router.get("/refresh/profile", verifyRefreshToken, profileUser.profileController); // Đường dẫn API để lấy thông tin người dùng đã đăng nhập);
-router.post('/refresh/logout', verifyRefreshToken, logoutController.logOutAccount); // Đường dẫn API để đăng xuất người dùng
-router.post('/upload', authMiddleware, upload.single('video'), upLoadVideo); // Đường dẫn API để upload video
-router.get('/requestVideo', videoPublicController.videoPublic); // Đường dẫn API để render video
-router.get('/likeVideo', authMiddleware, likeVideo) // Đường dẫn API để render video đã thích
-router.get('/refresh/token', verifyRefreshToken, (req, res) => {// Đường dẫn API để làm mới token
+// === PUBLIC (KHÔNG YÊU CẦU TOKEN)
+router.post('/login', userLogin.loginUserController);
+router.post('/createUser', creatAccountController.creatAccountController);
+router.get('/requestVideo', videoPublicController.videoPublic);
+
+// === REFRESH (chỉ yêu cầu refresh cookie, KHÔNG dùng authMiddleware)
+router.get('/refresh/profile', verifyRefreshToken, profileUser.profileController);
+router.post('/refresh/logout', verifyRefreshToken, logoutController.logOutAccount);
+router.get('/refresh/token', verifyRefreshToken, (req, res) => {
   res.json({ success: true, message: 'Token refreshed' });
 });
-router.post('/postcomment', authMiddleware,limitComment, postComment)// đường dẫn thêm comment
-router.get('/getcomments',authMiddleware,renderComment)// api lấy comment từ db 
-router.post('/like', authMiddleware, updateLike)// đường dẫn cập nhật like 
 
-router.get('/myvideo',authMiddleware,myvideo)
+// === BẢO VỆ (mọi route phía dưới mới yêu cầu access_token)
+router.use(authMiddleware);
+router.post('/addBookmark', addBookMark);
+router.get('/videoBookmark', videoBookmark);
+router.post('/upload', upload.single('video'), upLoadVideo);
+router.get('/likeVideo', likeVideo);
+router.post('/postcomment', limitComment, postComment);
+router.get('/getcomments', renderComment);
+router.post('/like', updateLike);
+router.get('/myvideo', myvideo);
+
 module.exports = router;
-

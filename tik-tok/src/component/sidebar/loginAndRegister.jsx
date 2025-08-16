@@ -15,6 +15,8 @@ import axios from "axios";
 import { MyContext } from "../../context/myContext";
 import { useContext } from "react";
 const API = process.env.REACT_APP_URL_API;// sử dụng biến môi trường để lấy URL API
+const API_PUBLIC = process.env.REACT_APP_URL_API_PUBLIC;
+
 export default function LoginAndRegister({ onClose, onLoginSuccess }) {
   // component xử lý đăng nhập và đăng ký tài khoản
   const [errorMessage, setErrorMessage] = useState(""); // Thêm state để lưu thông báo lỗi hoặc thành công
@@ -42,7 +44,7 @@ export default function LoginAndRegister({ onClose, onLoginSuccess }) {
       const login = async () => {
         try {
           const res = await axios.post(
-            `${API}/login`, // sử dụng biến môi trường để lấy URL API
+            `${API_PUBLIC}/login`, // sử dụng biến môi trường để lấy URL API
             {
               account: formData.username,
               password: formData.password,
@@ -83,7 +85,7 @@ export default function LoginAndRegister({ onClose, onLoginSuccess }) {
       // Gọi API đăng ký account user ở đây
       const register = async () => {
         try {
-          await axios.post(`${API}/createUser`, {
+          await axios.post(`${API_PUBLIC}/createUser`, {
             account: formData.username, // gửi tên tài khoản lên server
             password: formData.password, // gửi mật khẩu lên server
           });

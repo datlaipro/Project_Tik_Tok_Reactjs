@@ -9,7 +9,6 @@ async function renderVideoLike(user_id, last_id) {
 
   try {
     // B1: đảm bảo Redis đã kết nối (không lỗi nếu Redis đang down)
-    try { await ensureConnected(); } catch {}
 
     // B2: lấy cache nếu sẵn sàng
     if (redisClient.isReady) {

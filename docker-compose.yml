@@ -35,6 +35,7 @@ services:
   api:
     build:
       context: ./Tik_Tok_Express
+    image: babyshark1000/project_tik_tok_clone-api:latest
     container_name: tikapi
     env_file:
       - ./Tik_Tok_Express/.env
@@ -43,28 +44,30 @@ services:
       DB_HOST: db
       REDIS_HOST: redis
       REDIS_PORT: "6379"
-      # REDIS_PASSWORD: "yourStrongPass"
+      # DB_USER, DB_PASSWORD... -> để trong .env nếu cần
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_healthy
     expose:
-      - "4000"      # chỉ cho nội bộ, Nginx reverse proxy vào
+      - "4000"      # chỉ nội bộ; Nginx reverse proxy vào
     restart: unless-stopped
 
   web:
     build:
       context: ./tik-tok
       args:
-        REACT_APP_URL_API: "https://api.tiktok.io.vn"
+        # Dùng /api để FE gọi cùng origin qua Nginx khi test localhost
+        REACT_APP_URL_API_PUBLIC: "/api"
+    image: babyshark1000/project_tik_tok_clone-web:latest
     container_name: tikweb
     env_file:
       - ./tik-tok/.env
     depends_on:
       - api
     expose:
-      - "80"        # FE serve trên 80 nội bộ, Nginx reverse proxy vào
+      - "80"        # FE serve port 80 nội bộ; Nginx reverse proxy vào
     restart: unless-stopped
 
   nginx:
@@ -75,17 +78,19 @@ services:
       - api
     ports:
       - "80:80"
-      - "443:443"
+      - "443:443"   # dùng cho prod; local vẫn map được, chỉ cần cấu hình server phù hợp
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - ./nginx/logs:/var/log/nginx
       - ./nginx/certbot/www:/var/www/certbot
       - ./nginx/certbot/conf:/etc/letsencrypt
+      - /etc/letsencrypt:/etc/letsencrypt
     restart: unless-stopped
 
   certbot:
     image: certbot/certbot
     container_name: tikcertbot
+    profiles: ["prod"]  # chỉ chạy ở môi trường production
     volumes:
       - ./nginx/certbot/www:/var/www/certbot
       - ./nginx/certbot/conf:/etc/letsencrypt

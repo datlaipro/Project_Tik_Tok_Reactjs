@@ -11,32 +11,17 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import ProfileMenu from "./menuLogOut";
 
 import LoginAndRegister from "./loginAndRegister";
-import { useContext } from "react";
+import { useContext, useState, useReducer, useEffect, useRef } from "react";
 import { MyContext } from "../../context/myContext";
-import { useState, useReducer, useEffect } from "react";
-import { Modal, Box } from "@mui/material"; // ✅ Modal & Box từ MUI
-import { useRef } from "react";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Link,
-  useNavigate,
-} from "react-router-dom";
+import { Modal, Box } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
-import axios from "axios"; // Thư viện axios để gửi request HTTP
-const stateColor = [
-  "none",
-  "none",
-  "none",
-  "none",
-  "none",
-  "none",
-  "none",
-  "none",
-]; // khởi tạo mảng màu sắc của các nút sidebar
+const stateColor = ["none","none","none","none","none","none","none","none"];
 const setActive = "SET_ACTIVE";
-const API = process.env.REACT_APP_URL_API; // sử dụng biến môi trường để lấy URL API
+const API = process.env.REACT_APP_URL_API_PUBLIC;
+const LOGGED_IN_KEY = "loggedIn"; // ✅ FIX: key đánh dấu đã login
+
 const reducer = (state, action) => {
   switch (action.type) {
     case setActive:
@@ -47,44 +32,49 @@ const reducer = (state, action) => {
 };
 
 function Sidebar() {
-  const [data, setData] = useState(""); // trang thái lưu tên đăng nhập của người dùng
-  const { sharedData } = useContext(MyContext); // lưu giữ trạng thái upload video (đã upload/ chưa upload )
-  const navigate = useNavigate(); // khởi tạo hook điều hướng
-  const [state, dispatch] = useReducer(reducer, stateColor); // sử lí màu sắc của các nút sidebar
-  const [login, setLogin] = useState(false); // sử lí trạng thái đăng nhập`]
-  const [open, setOpen] = useState(false); // sử lí trạng thái mở modal đăng nhập/ đăng kí
+  const [data, setData] = useState(""); // tên đăng nhập
+  const { sharedData } = useContext(MyContext);
+  const navigate = useNavigate();
+  const [state, dispatch] = useReducer(reducer, stateColor);
+  const [login, setLogin] = useState(false);           // trạng thái đăng nhập
+  const [open, setOpen] = useState(false);             // modal login/register
+  const [loading, setLoading] = useState(true);        // chờ xác định trạng thái
+  const [anchorEl, setAnchorEl] = useState(null);
+  const opens = Boolean(anchorEl);
+
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-  const [loading, setLoading] = useState(true); // 👈 thêm state loading để tránh lỗi hiển thị trạng thái đăng nhập
-  const [anchorEl, setAnchorEl] = useState(null); // trang thái để lưu vị trí click của nút đăng nhập/ đăng kí
-  // const [stateUpload, setStateUpload] = useState(false);
-  const opens = Boolean(anchorEl);
-
-  // Khi load lại trang, kiểm tra trạng thái đăng nhập
+  // ✅ FIX: chỉ hydrate profile nếu đã từng login
   useEffect(() => {
-    axios
-      .get(`${API}/refresh/profile`, {
-        withCredentials: true,
-      })
-      .then((res) => {
-        // console.log("✅ Đã đăng nhập, user:", res.data.user.account);
-        setData(res.data.user.account); // trả về tên đăng nhập của người dùng
-        // name.current = res.data.user.account;
-        // setUseID(res.data.user.user_id)// gửi id user cho component like
-
+    let ignore = false;
+    async function boot() {
+      // Chưa có cờ -> không gọi /refresh/*
+      if (!localStorage.getItem(LOGGED_IN_KEY)) {
+        if (!ignore) {
+          setLogin(false);
+          setLoading(false);
+        }
+        return;
+      }
+      try {
+        const res = await axios.get(`${API}/refresh/profile`, {
+          withCredentials: true,
+        });
+        if (ignore) return;
+        setData(res?.data?.user?.account || "");
         setLogin(true);
-        setLoading(false); // ✅ dừng loading sau khi có phản hồi
-      })
-      .catch((err) => {
-        console.log(
-          "❌ Chưa đăng nhập hoặc token lỗi:",
-          err.response?.data || err.message
-        );
-        setLogin(false); // vẫn cần đặt lại login false
-        setLoading(false); // ✅ dừng loading
-      });
-  }, []);
+      } catch (err) {
+        // refresh fail -> coi như chưa đăng nhập
+        localStorage.removeItem(LOGGED_IN_KEY);
+        if (!ignore) setLogin(false);
+      } finally {
+        if (!ignore) setLoading(false);
+      }
+    }
+    boot();
+    return () => { ignore = true; };
+  }, [API]);
 
   return (
     <div>
@@ -119,20 +109,18 @@ function Sidebar() {
         handleClick={() => {
           dispatch({ type: setActive, index: 3 });
 
-          // verifyLogin(); // kiểm tra đăng nhập
           if (login) {
-            // nếu chưa đăng nhập thì mở yêu cầu đăng nhập mới cho upload video
-            navigate("/upload");
+            // Đã đăng nhập
+            if (sharedData) {
+              alert("chưa upload xong video ");
+              navigate("/video");
+            } else {
+              navigate("/upload");
+            }
           } else {
+            // Chưa đăng nhập -> mở modal + đưa về /video
             handleOpen();
-            setTimeout(() => navigate("/video"), 100); // delay 100ms để tránh xung đột để đảm bảo chạy handleOpen song song với navigate
-          }
-          // nếu đã đăng nhập thì chuyển đến trang upload, nếu chưa thì mở modal đăng nhập
-          if (sharedData) {
-            alert("chưa upload xong video ");
-            navigate("/video");
-          } else {
-            navigate("/upload");
+            setTimeout(() => navigate("/video"), 100);
           }
         }}
         isActive={state[3] === "red"}
@@ -156,22 +144,23 @@ function Sidebar() {
         isActive={state[6] === "red"}
       />
 
-      {loading ? null : login === false ? ( // khi load trang xong mới render
+      {loading ? null : !login ? (
         <>
           <Home
             icon={<AccountCircleIcon sx={{ fontSize: 30 }} />}
             title="đăng nhập"
             handleClick={() => {
               dispatch({ type: setActive, index: 7 });
-              handleOpen(); // Kích hoạt hiển thị form Đăng nhập hoăc Đăng ký
+              handleOpen();
             }}
             isActive={state[7] === "red"}
           />
-          <Modal // component Modal đăng nhập/ đăng kí từ MUI
+
+          <Modal
             open={open}
             onClose={(event, reason) => {
               if (reason !== "backdropClick") {
-                handleClose(); // chỉ đóng nếu không phải do click ra ngoài
+                handleClose();
               }
             }}
           >
@@ -190,10 +179,20 @@ function Sidebar() {
             >
               <LoginAndRegister
                 onClose={handleClose}
-                onLoginSuccess={() => {
+                onLoginSuccess={async () => {
+                  // ✅ FIX: đặt cờ đã đăng nhập ngay khi login thành công
+                  localStorage.setItem(LOGGED_IN_KEY, "1");
                   setLogin(true);
 
-                  
+                  // (không bắt buộc) hydrate lại tên người dùng sau login
+                  try {
+                    const r = await axios.get(`${API}/refresh/profile`, {
+                      withCredentials: true,
+                    });
+                    setData(r?.data?.user?.account || "");
+                  } catch {}
+
+                  handleClose();
                 }}
               />
             </Box>
@@ -205,36 +204,35 @@ function Sidebar() {
           title={data}
           handleClick={(event) => {
             dispatch({ type: setActive, index: 7 });
-            setAnchorEl(event.currentTarget); // mở menu tại vị trí click
+            setAnchorEl(event.currentTarget);
           }}
           isActive={state[7] === "red"}
         />
       )}
-      <ProfileMenu // xử lí hiển thị menu đăng xuất và xem hồ sơ
-        anchorEl={anchorEl} // lấy được vị trí click ở trên rồi neo chỗ html này vào
+
+      <ProfileMenu
+        anchorEl={anchorEl}
         open={opens}
         handleClose={(event, reason) => {
           if (reason !== "backdropClick") {
-            
-            navigate("/profile"); // gọi khi click vào "Hồ sơ" để show trang profile
+            navigate("/profile");
           }
-
-          setAnchorEl(null); // đóng hộp thoại đăng xuất/ hồ sơ
+          setAnchorEl(null);
         }}
-        logOut={() => {
-          // xử lí đăng xuất
-          axios.post(
-            `${API}/refresh/logout`,
-            {},
-            {
-              withCredentials: true, // gửi cookie để xác thực đăng xuất
-            }
-          );
-          localStorage.clear(); // khi đăng xuất thì xóa id người dùng
+        logOut={async () => {
+          try {
+            await axios.post(
+              `${API}/refresh/logout`,
+              {},
+              { withCredentials: true }
+            );
+          } catch {}
+          // ✅ FIX: chỉ xóa cờ đăng nhập, không clear toàn bộ localStorage
+          localStorage.removeItem(LOGGED_IN_KEY);
 
-          setLogin(false); // Đặt lại trạng thái đăng nhập
-          setAnchorEl(null); // Đóng menu đăng xuất
-          navigate("/video"); // Chuyển hướng về trang video sau khi đăng xuất
+          setLogin(false);
+          setAnchorEl(null);
+          navigate("/video");
         }}
       />
     </div>

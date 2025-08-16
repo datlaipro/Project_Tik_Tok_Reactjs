@@ -1,6 +1,6 @@
 // src/api.js
 import axios from "axios";
-const API = process.env.REACT_APP_URL_API;// sử dụng biến môi trường để lấy URL API
+const API = process.env.REACT_APP_URL_API_PUBLIC;// sử dụng biến môi trường để lấy URL API
 
 const api = axios.create({
   baseURL: API ,// sử dụng biến môi trường để lấy URL API

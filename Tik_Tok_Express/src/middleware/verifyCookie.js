@@ -1,6 +1,10 @@
 const jwt = require('jsonwebtoken');
 const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });//tìm file env ở thư mục gốc
+
+// Chỉ load .env khi chạy DEV (local). Prod dùng env từ Docker Compose.
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
+}
 const SECRET_KEY = process.env.JWT_SECRET;
 
 function authMiddleware(req, res, next) {

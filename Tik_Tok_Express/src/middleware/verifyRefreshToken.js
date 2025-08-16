@@ -1,7 +1,11 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });//tìm file env ở thư mục gốc
+
+// Chỉ load .env khi chạy DEV (local). Prod dùng env từ Docker Compose.
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
+}
 const configDB = require('../config/database'); // đừng quên import nếu chưa có
 const SECRET_KEY = process.env.JWT_SECRET;
 const REFRESH_EXPIRE = '7d';
@@ -51,17 +55,21 @@ async function refreshToken(req, res, next) {
 
         res.cookie('token', newAccessToken, {
             httpOnly: true,
-            secure: false, // bật true nếu dùng HTTPS
-            sameSite: 'lax',
-            maxAge: 5 * 60 * 1000 // 5 phút
+            secure: true, // bật true nếu dùng HTTPS
+            sameSite: 'none',
+            maxAge: 5 * 60 * 1000, // 5 phút,
+            // domain: process.env.DOMAIN
+
         });
 
         res.cookie('refreshToken', newRefreshToken, {
             httpOnly: true,
-            secure: false,
-            sameSite: 'lax',
+            secure: true,
+            sameSite: 'none',
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 ngày
-            path: '/api/refresh' //  path
+            path: '/api/refresh',
+            // domain: process.env.DOMAIN
+            //  path
         });
 
         req.user = payload;

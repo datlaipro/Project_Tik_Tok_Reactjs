@@ -1,5 +1,11 @@
 const jwt = require('jsonwebtoken');
 const configDB = require('../config/database');
+const path = require('path');
+
+// Chỉ load .env khi chạy DEV (local). Prod dùng env từ Docker Compose.
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
+}
 const SECRET_KEY = process.env.JWT_SECRET;
 
 async function logOutAccount(req, res) {
